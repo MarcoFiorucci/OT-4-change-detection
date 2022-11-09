@@ -16,13 +16,38 @@ from ott.tools import transport
 
 import ot
 import ot.plot
+import argparse
+
+def parser_f():
+
+    parser = argparse.ArgumentParser(
+        description="TO arguments",
+    )
+    parser.add_argument(
+        "--csv0",
+        type=str,
+    )
+    parser.add_argument(
+        "--csv1",
+        default=None,
+        type=str,
+    )
+    parser.add_argument(
+        "--output",
+        default=None,
+        type=str,
+    )
+    args = parser.parse_args()
+    return args
+
 
 #import pdb; pdb.set_trace()
 
 #Flag variables
 synthetic = False
 visualization = False
-
+opt = parser_f()
+dataname = opt.output
 #auxiliary plot function
 myplot = lambda x,y,ms,col: plt.scatter(x,y, s=ms*20, edgecolors="k", c=col, linewidths=2)
 
@@ -34,11 +59,11 @@ if synthetic == False:
     folder_path_pc0 ='/home/marco/IEEE_Dataset_V1/2-Lidar10/Train/LyonN10/'
     folder_path_pc1 ='/home/marco/IEEE_Dataset_V1/2-Lidar10/Train/LyonN10/'
 
-    pc0_file = 'pc0_clipped.txt' 
-    pc1_file = 'pc1_clipped.txt'
+    pc0_file = opt.csv0 
+    pc1_file = opt.csv1
 
-    pc0 = np.loadtxt(folder_path_pc0 + pc0_file, skiprows= 0, delimiter= ',')
-    pc1 = np.loadtxt(folder_path_pc1 + pc1_file, skiprows= 0, delimiter= ',')
+    pc0 = np.loadtxt(pc0_file, skiprows= 0, delimiter= ',')
+    pc1 = np.loadtxt(pc1_file, skiprows= 0, delimiter= ',')
 
     print('pc0 shape', pc0.shape)
     print('pc1 shape', pc1.shape)
@@ -95,7 +120,7 @@ end = time.time()
 print('Computation time for transportation plan: ',end - start)
 print('Descriptive statistics of the Transportation Plan')
 print('mean:of P', jnp.average(P), 'std of P:', np.std(P), 'median of P:', jnp.median(P) ,' max of P:', jnp.max(P), 'min of P:', jnp.min(P))
-jnp.save('/home/marco/experiments/P',P)
+jnp.save('{}_P'.format(dataname),P)
 
 print('----------------------------------')
 print('| Displacement Interpolation     |')
@@ -184,6 +209,7 @@ for th in thresholds_y:
     # print('shape of gt ', gt.shape)
      iou_th_y.append(iou_i)
 print('max iou of changes on y:' +  str(max(iou_th_y)))
+np.savez(dataname + ".npz", score=max(iou_th_y))
 
 if(visualization == True):
     print('----------------------------------')
@@ -236,7 +262,7 @@ if(visualization == True):
     colours = changes_intesity_y
     plot = ax.scatter(y[:,0], y[:,1], pc1[:,2], s=0.1, c=colours, cmap='rainbow' )
     fig.colorbar(plot)
-    plt.savefig('/home/marco/experiments/detected_changes_y.png')
+    plt.savefig('{}_detected_changes_y.png'.format(dataname))
 
     fig =plt.figure(6)
     ax = plt.axes(projection='3d')
@@ -244,7 +270,7 @@ if(visualization == True):
     #plot = ax.scatter(x[:,0], x[:,1], pc0[:,2], s=0.1, c=colours, cmap='rainbow' )
     plot = ax.scatter(x[:,0], x[:,1], x[:,2], s=0.1)
     #fig.colorbar(plot)
-    plt.savefig('/home/marco/experiments/first_cloud.png')
+    plt.savefig('{}_first_cloud.png'.format(dataname))
 
     fig =plt.figure(7)
     ax = plt.axes(projection='3d')
@@ -252,4 +278,4 @@ if(visualization == True):
     plot = ax.scatter(y[:,0], y[:,1], pc1[:,2], s=0.1, c=colours, cmap='rainbow' )
     #plot = ax.scatter(y[:,0], y[:,1], y[:,2], s=0.1, c='red')
     #fig.colorbar(plot)
-    plt.savefig('/home/marco/experiments/second_cloud.png')
+    plt.savefig('{}_second_cloud.png'.format(dataname))
