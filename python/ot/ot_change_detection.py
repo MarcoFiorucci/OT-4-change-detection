@@ -71,12 +71,12 @@ if synthetic == False:
     xy_s = pc0[:,0:3]
     #xy_s/= np.sum(xy_s)
 
-    print('shape of x', xy_s.shape, 'mean of x:', np.average(xy_s), 'median: of x', np.median(xy_s) ,' max of x:', np.max(xy_s), 'min of x:', np.min(xy_s))
+    #print('shape of x', xy_s.shape, 'mean of x:', np.average(xy_s), 'median: of x', np.median(xy_s) ,' max of x:', np.max(xy_s), 'min of x:', np.min(xy_s))
     
     xy_t = pc1[:,0:3]
     #xy_t/= np.sum(xy_t)
     
-    print('shape of y', xy_t.shape, 'mean of y:', np.average(xy_t), 'median: of y', np.median(xy_t) ,' max of y:', np.max(xy_t), 'min of y:', np.min(xy_t))
+    #print('shape of y', xy_t.shape, 'mean of y:', np.average(xy_t), 'median: of y', np.median(xy_t) ,' max of y:', np.max(xy_t), 'min of y:', np.min(xy_t))
     
     x = jnp.asarray(xy_s)
     y = jnp.asarray(xy_t)
@@ -85,11 +85,11 @@ if synthetic == False:
     #a is now a uniform probability distribution
     a_shape = pc0[:,2].shape
     a = np.full((a_shape), 1/a_shape[0]) 
-    print('shape of a',a.shape, 'median: of a:', np.median(a), ' mean: of a:', np.mean(a), ' max of a:', np.max(a), 'min of a:', np.min(a))
+    #print('shape of a',a.shape, 'median: of a:', np.median(a), ' mean: of a:', np.mean(a), ' max of a:', np.max(a), 'min of a:', np.min(a))
     b_shape = pc1[:,2].shape
     #b is now a uniform probability distribution
     b = np.full((b_shape), 1/b_shape[0])
-    print('shape of b', b.shape, 'median: of b', np.median(b), ' mean: of b', np.mean(b), ' max of b:', np.max(b), 'min of b:', np.min(b))
+    #print('shape of b', b.shape, 'median: of b', np.median(b), ' mean: of b', np.mean(b), ' max of b:', np.max(b), 'min of b:', np.min(b))
 
 
 else:
@@ -118,8 +118,8 @@ P = ot.matrix
 end = time.time()
 
 print('Computation time for transportation plan: ',end - start)
-print('Descriptive statistics of the Transportation Plan')
-print('mean:of P', jnp.average(P), 'std of P:', np.std(P), 'median of P:', jnp.median(P) ,' max of P:', jnp.max(P), 'min of P:', jnp.min(P))
+#print('Descriptive statistics of the Transportation Plan')
+#print('mean:of P', jnp.average(P), 'std of P:', np.std(P), 'median of P:', jnp.median(P) ,' max of P:', jnp.max(P), 'min of P:', jnp.min(P))
 jnp.save('{}_P'.format(dataname),P)
 
 print('----------------------------------')
@@ -127,10 +127,11 @@ print('| Displacement Interpolation     |')
 print('----------------------------------')
 one_n1 = np.ones(len(a))
 one_n2 = np.ones(len(b))
-print('shape of P', P.shape)
-print('shape of P Transpose', jnp.transpose(P).shape)
-print('shape of y', y.shape)
-print('shape of x', x.shape)
+#print('shape of P', P.shape)
+#print('shape of P Transpose', jnp.transpose(P).shape)
+#print('shape of y', y.shape)
+#print('shape of x', x.shape)
+
 #compute the diplacement interpolation of the first cloud to the second
 # xs_hat = np.matmul(np.linalg.inv(np.diag(np.matmul(P,one_n2))) ,
 #                      np.matmul(P, y))
@@ -143,11 +144,11 @@ print('shape of x', x.shape)
 yt_hat = np.matmul(np.linalg.inv(np.diag(np.matmul(np.transpose(P),one_n1))) ,
                      np.matmul(np.transpose(P), x))
 np.linalg.inv(np.diag(np.matmul(jnp.transpose(P),one_n1)))
-print('Descriptive statistics of y')
-print('mean:', jnp.average(y), 'std:', np.std(y), 'median:', jnp.median(y),' max:', jnp.max(y), 'min:', jnp.min(y))
-print('Descriptive statistics of xs_hat')
-print('mean:', jnp.average(yt_hat), 'std:', np.std(yt_hat), 'median:', jnp.median(yt_hat),' max:', jnp.max(yt_hat), 'min:', jnp.min(yt_hat))
-print('shape of yt_hat', yt_hat.shape)
+#print('Descriptive statistics of y')
+#print('mean:', jnp.average(y), 'std:', np.std(y), 'median:', jnp.median(y),' max:', jnp.max(y), 'min:', jnp.min(y))
+#print('Descriptive statistics of xs_hat')
+#print('mean:', jnp.average(yt_hat), 'std:', np.std(yt_hat), 'median:', jnp.median(yt_hat),' max:', jnp.max(yt_hat), 'min:', jnp.min(yt_hat))
+#print('shape of yt_hat', yt_hat.shape)
 
 print('----------------------------------')
 print('| Quantity of changes              |')
@@ -170,9 +171,9 @@ print('----------------------------------')
 #changes in the latitue-longitude plane |Y-Yt_hat|^2
 changes_intesity_y = jnp.sum(jnp.square(y-yt_hat), axis=1)
 changes_intesity_y/= jnp.max(changes_intesity_y)
-print('shape of change_intensity', changes_intesity_y.shape)
-print('Descriptive statistics of |Y-Ys_hat|^2')
-print('mean:', jnp.average(changes_intesity_y), 'std:', jnp.std(changes_intesity_y), 'median:', jnp.median(changes_intesity_y),' max:', jnp.max(changes_intesity_y), 'min:', jnp.min(changes_intesity_y))
+#print('shape of change_intensity', changes_intesity_y.shape)
+#print('Descriptive statistics of |Y-Ys_hat|^2')
+#print('mean:', jnp.average(changes_intesity_y), 'std:', jnp.std(changes_intesity_y), 'median:', jnp.median(changes_intesity_y),' max:', jnp.max(changes_intesity_y), 'min:', jnp.min(changes_intesity_y))
 
 print('----------------------------------')
 print('| Evaluation Metrics              |')
@@ -188,17 +189,17 @@ gt = pc1[:,6]
 #change gt: 0 no change, 1 changes (both positive and negative changes)
 idxs = np.where(gt == 2)
 gt[idxs] = 1
-print('shape of g:', gt.shape)
-print('# of positive changed pixels:', np.count_nonzero(gt == 1)) 
-print('# of unchanged pixels:', np.count_nonzero(gt == 0))
-print('sum of pixels:', np.sum( np.count_nonzero(gt == 1) + np.count_nonzero(gt == 0)))
+#print('shape of g:', gt.shape)
+#print('# of positive changed pixels:', np.count_nonzero(gt == 1)) 
+#print('# of unchanged pixels:', np.count_nonzero(gt == 0))
+#print('sum of pixels:', np.sum( np.count_nonzero(gt == 1) + np.count_nonzero(gt == 0)))
 
 print('-------------------------------------------------------------')
 print('shape of change_intensity', changes_intesity_y.shape)
 
 #quantize the change_intensity_y into 0 and 1 w.r.t of the threshold th
 thresholds_y = np.arange(np.min(changes_intesity_y), np.max(changes_intesity_y),np.std(changes_intesity_y)/10)
-print(thresholds_y)
+#print(thresholds_y)
 iou_th_y = []
 iou_i = 0
 for th in thresholds_y:
