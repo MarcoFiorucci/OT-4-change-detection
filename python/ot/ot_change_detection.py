@@ -159,16 +159,16 @@ print('----------------------------------')
 # print('Descriptive statistics of |X-Xs_hat|^2')
 # print('mean:', jnp.average(changes_intesity_x), 'std:', jnp.std(changes_intesity_x), 'median:', jnp.median(changes_intesity_x),' max:', jnp.max(changes_intesity_x), 'min:', jnp.min(changes_intesity_x))
 
-#changes in the latitue-longitude plane |Y-Yt_hat|^2
-#changes_intesity_y = jnp.sum(jnp.square(y-yt_hat), axis=1)
 
 #change as ||z_y -z_yhat ||^2
-y_z  = y[:,2].reshape(y[:,2].shape[0],1)
-yt_hat_z = yt_hat[:,2].reshape(yt_hat[:,2].shape[0],1)
-print('y_z.shape', y_z.shape)
-print('yt_hat_z.shape' ,yt_hat_z.shape)
-changes_intesity_y = jnp.square(y_z - yt_hat_z)
+#y_z  = y[:,2].reshape(y[:,2].shape[0],1)
+#yt_hat_z = yt_hat[:,2].reshape(yt_hat[:,2].shape[0],1)
+#changes_intesity_y = jnp.square(y_z - yt_hat_z)
+#print('y_z.shape', y_z.shape)
+#print('yt_hat_z.shape' ,yt_hat_z.shape)
 
+#changes in the latitue-longitude plane |Y-Yt_hat|^2
+changes_intesity_y = jnp.sum(jnp.square(y-yt_hat), axis=1)
 changes_intesity_y/= jnp.max(changes_intesity_y)
 print('shape of change_intensity', changes_intesity_y.shape)
 print('Descriptive statistics of |Y-Ys_hat|^2')
