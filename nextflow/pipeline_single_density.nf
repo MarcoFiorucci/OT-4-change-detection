@@ -31,7 +31,7 @@ process estimate_double_density_in_one {
             $FOUR \
             --normalize $NORM \
             --lr $LR \
-            -- wd $WD \
+            --wd $WD \
             --activation $ACT\
             --name $NAME\
             --workers 8

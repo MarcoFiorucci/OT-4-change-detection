@@ -185,7 +185,10 @@ def iou(gt, prediction):
      iou_score = np.sum(intersection) / np.sum(union)
      return iou_score
 
-gt = pc1[:,6]
+if pc1.shape[1] > 4:
+    gt = pc1[:,6]
+else:
+    gt = pc1[:,3]
 #change gt: 0 no change, 1 changes (both positive and negative changes)
 idxs = np.where(gt == 2)
 gt[idxs] = 1
