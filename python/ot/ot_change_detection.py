@@ -62,8 +62,8 @@ if synthetic == False:
     pc0_file = opt.csv0 
     pc1_file = opt.csv1
 
-    pc0 = np.loadtxt(pc0_file, skiprows= 0, delimiter= ',')
-    pc1 = np.loadtxt(pc1_file, skiprows= 0, delimiter= ',')
+    pc0 = np.loadtxt(pc0_file, skiprows=1, delimiter= ',')
+    pc1 = np.loadtxt(pc1_file, skiprows=1, delimiter= ',')
 
     print('pc0 shape', pc0.shape)
     print('pc1 shape', pc1.shape)
