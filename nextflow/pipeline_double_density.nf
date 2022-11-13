@@ -88,7 +88,7 @@ workflow double_f {
         selection(training_scores)
         selection.out[0] .splitCsv(skip:1, sep: ',')//.map{it -> it[0]} .view()
             .set{selected}
-        estimate_density.out[1].join(selected, by: 0).groupTuple(by: 6).set{fused}
+        estimate_density.out[1].join(selected, by: 0).groupTuple(by: 5).set{fused}
         post_processing(fused)
     emit:
         post_processing.output
