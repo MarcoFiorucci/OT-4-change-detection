@@ -1,17 +1,17 @@
-from tkinter import X
+#from tkinter import X
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
-from sklearn.preprocessing import OneHotEncoder
+#from mpl_toolkits import mplot3d
+#from sklearn.preprocessing import OneHotEncoder
 import time
 
 import jax
 import jax.numpy as jnp
-from jax import device_put
+#from jax import device_put
 
-import ott
-from ott.geometry import pointcloud
-from ott.core import sinkhorn
+#import ott
+#from ott.geometry import pointcloud
+#from ott.core import sinkhorn
 from ott.tools import transport
 
 import ot
