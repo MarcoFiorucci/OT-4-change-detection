@@ -34,6 +34,7 @@ for f in files:
     dic["IoU_mc"].append(IoU_mc)
 
 table = pd.DataFrame(dic)
+table.to_csv("before_mean_results.csv")
 table = table.groupby(["dataset", "method"]).mean()
 table = table.drop("chunks", axis=1)
 table.to_csv("final_results.csv")

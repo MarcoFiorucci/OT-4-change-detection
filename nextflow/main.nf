@@ -70,7 +70,7 @@ process final_table {
     input:
         file(results)
     output:
-        file("final_results.csv")
+        file("final_results.csv"), file("before_mean_results.csv")
 
     script:
         py_file = file("python/src/regroup.py")
