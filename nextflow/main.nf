@@ -1,6 +1,7 @@
 
 include { double_f } from './pipeline_double_density.nf'
 include { single_f } from './pipeline_single_density.nf'
+include { optimal_transport } from './pipeline_single_density.nf'
 
 data_paired = Channel.fromFilePairs("LyonN4/*{0,1}.txt")
 data = Channel.fromPath("LyonN4/*.txt")
@@ -94,7 +95,8 @@ workflow {
         }
         double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
         single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+        optimal_transport(pairedPointsclouds)
 
-        double_f.out.map{it -> it[2]}.concat(single_f.out.map{it -> it[2]}).collect().set{results}
+        double_f.out.map{it -> it[2]}.concat(single_f.out.map{it -> it[2]}, optimal_transport.out).collect().set{results}
         final_table(results)
 }
