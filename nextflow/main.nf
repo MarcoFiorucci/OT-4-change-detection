@@ -4,11 +4,11 @@ include { single_f } from './pipeline_single_density.nf'
 include { optimal_transport } from './ot.nf'
 
 // Parameters
-scale = [0.1, 1.0, 5.0, 10.0]
+scale = [1.0, 5.0, 10.0]
 fourier = ["--fourier"]
 norm = ["one_minus"]
-lr = [0.001, 0.01, 0.1]
-mapping_size = [256, 512]
+lr = [0.001, 0.01]
+mapping_size = [512]
 act = ["relu"]
 epoch = [60]
 wd = [0.0001]
