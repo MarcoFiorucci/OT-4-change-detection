@@ -17,7 +17,7 @@ params.extension = "ply"
 ext = params.extension
 
 paired_ply = Channel.fromFilePairs("data/full_data/pointCloud{0,1}.ply")
-MAX_POINT = 500000
+MAX_POINT = 30000
 
 paired_txt = Channel.fromFilePairs("data/clippeddata/clippedMarco{0,1}.txt")
 
