@@ -1,10 +1,9 @@
 
 include { double_f } from './pipeline_double_density.nf'
 include { single_f } from './pipeline_single_density.nf'
-include { optimal_transport } from './pipeline_single_density.nf'
+include { optimal_transport } from './ot.nf'
 
-data_paired = Channel.fromFilePairs("LyonN4/*{0,1}.txt")
-data = Channel.fromPath("LyonN4/*.txt")
+// Parameters
 scale = [0.1, 0.5, 1.0, 5.0, 10.0]
 fourier = ["--fourier"]
 norm = ["one_minus"]
@@ -15,10 +14,10 @@ epoch = [100]
 wd = [0.0001]
 params.extension = "ply"
 ext = params.extension
-
-paired_ply = Channel.fromFilePairs("data/full_data/pointCloud{0,1}.ply")
 MAX_POINT = 30000
 
+// Data
+paired_ply = Channel.fromFilePairs("data/full_data/pointCloud{0,1}.ply")
 paired_txt = Channel.fromFilePairs("data/clippeddata/clippedMarco{0,1}.txt")
 
 process from_ply_to_txt {
