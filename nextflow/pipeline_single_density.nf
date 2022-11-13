@@ -64,7 +64,7 @@ process post_processing {
         tuple val(NAMES), path(PNG0), path(PNG1), path(NPZ), path(WEIGHTS), path(FILE0), path(FILE1), val(DATANAME)
 
     output:
-        tuple path("*.png"), path("*${DATANAME}_results.npz")
+        tuple path("*.png"), path("*${DATANAME}*_results.npz")
 
     script:
         """
