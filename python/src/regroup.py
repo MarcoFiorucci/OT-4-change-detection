@@ -71,7 +71,7 @@ for f in files:
 table = pd.DataFrame(dic)
 table.to_csv("before_mean_results.csv")
 # drop those with 0 label change
-table = table.loc[(table["label1"] != 0) & table["label2"] != 0]
+table = table.loc[(table["label1"] != 0) & (table["label2"] != 0)]
 
 table_std = table.groupby(["dataset", "method"]).std()
 table_std = table_std.drop("chunks", axis=1)
