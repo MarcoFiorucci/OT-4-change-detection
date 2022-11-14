@@ -39,7 +39,7 @@ for f in files:
         chunks = 0
     
     
-    IoU_bin = float(npz["IoU_str_name"])
+    IoU_bin = float(npz[IoU_str_name])
 
     if OT:
         IoU_mc = 0.0
