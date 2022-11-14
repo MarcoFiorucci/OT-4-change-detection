@@ -64,7 +64,10 @@ if synthetic == False:
 
     pc0 = np.loadtxt(pc0_file, skiprows=1, delimiter= ',')
     pc1 = np.loadtxt(pc1_file, skiprows=1, delimiter= ',')
-
+    z0_n = pc0.shape[0]
+    z1_n = pc1.shape[1]
+    labels_1_n = (pc1[:,-1].astype(int) == 1)
+    labels_2_n = (pc1[:,-1].astype(int) == 2)
     print('pc0 shape', pc0.shape)
     print('pc1 shape', pc1.shape)
 
@@ -213,7 +216,11 @@ for th in thresholds_y:
     # print('shape of gt ', gt.shape)
      iou_th_y.append(iou_i)
 print('max iou of changes on y:' +  str(max(iou_th_y)))
-np.savez(dataname + ".npz", score=max(iou_th_y))
+
+
+np.savez(dataname + ".npz", score=max(iou_th_y),
+    z0_n=z0_n, z1_n=z1_n, labels_1_n=labels_1_n,
+    labels_2_n=labels_2_n)
 
 if(visualization == True):
     print('----------------------------------')

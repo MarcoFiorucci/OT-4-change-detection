@@ -9,12 +9,21 @@ dic = {
     "method" : [],
     "chunks" : [],
     "IoU" : [],
-    "IoU_mc": []
+    "IoU_mc": [],
+    "n0" : [],
+    "n1" : [],
+    "label1": [],
+    "label2": [],
 }
 
 
 for f in files:
     npz = np.load(f)
+    n0 = npz["z0_n"]
+    n1 = npz["z1_n"]
+    label1 = npz["labels_1_n"]
+    label2 = npz["labels_2_n"]
+
     OT = "OT" in f
     if OT:
         name = f.split("_")[0]
@@ -48,14 +57,23 @@ for f in files:
         IoU_mc = float(npz["IoU_mc"])
 
 
+
     dic["chunks"].append(chunks)
     dic["dataset"].append(dataname)
     dic["method"].append(method)
     dic["IoU"].append(IoU_bin)
     dic["IoU_mc"].append(IoU_mc)
+    dic["n0"].append(n0)
+    dic["n1"].append(n1)
+    dic["label1"].append(label1)
+    dic["label2"].append(label2)
 
 table = pd.DataFrame(dic)
 table.to_csv("before_mean_results.csv")
+table_std = table.groupby(["dataset", "method"]).std()
+table_std = table_std.drop("chunks", axis=1)
+table_std.columns = ["IoU_bin_std", "IoU_mc_std"]
 table = table.groupby(["dataset", "method"]).mean()
+table = table.join(table_std)
 table = table.drop("chunks", axis=1)
 table.to_csv("final_results.csv")

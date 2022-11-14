@@ -68,6 +68,12 @@ else:
     time0 = 0.
     time1 = 1.
 
+z0_n = table0.shape
+z1_n = table1.shape
+
+labels_1_n = (table1["label"].astype(int).values == 1).sum()
+labels_2_n = (table1["label"].astype(int).values == 2).sum()
+
 grid_indices = define_grid(table0, table1, step=2)
 xy_grid = grid_indices.copy()#.astype("float32")
 xy_onz1 = table1[['X', 'Y']].values#.astype("float32")
@@ -160,12 +166,12 @@ fig.write_image(name_png)
 
 # compute IoU
 
-
 name_npz = f"{double}_{dataname}_results.npz"
 np.savez(name_npz, indices=grid_indices, 
     z0_on1=z0_on1,  z1_on1=z1_on1, 
     z0_ongrid=z0_ongrid, z1_ongrid=z1_ongrid, 
     labels_on1=y_on1, labels_ongrid=result.label,
     IoU_mc=best_score, thresh_mc=best_thresh,
-    IoU_bin=best_score_bin, thresh_bin=best_thresh_bin)
+    IoU_bin=best_score_bin, thresh_bin=best_thresh_bin,
+    z0_n=z0_n, z1_n=z1_n, labels_1_n=labels_1_n, labels_2_n=labels_2_n)
 
