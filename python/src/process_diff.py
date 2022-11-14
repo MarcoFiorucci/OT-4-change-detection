@@ -68,8 +68,8 @@ else:
     time0 = 0.
     time1 = 1.
 
-z0_n = table0.shape
-z1_n = table1.shape
+z0_n = table0.shape[0]
+z1_n = table1.shape[0]
 
 labels_1_n = (table1["label"].astype(int).values == 1).sum()
 labels_2_n = (table1["label"].astype(int).values == 2).sum()

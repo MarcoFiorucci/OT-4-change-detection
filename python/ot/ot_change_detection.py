@@ -66,8 +66,8 @@ if synthetic == False:
     pc1 = np.loadtxt(pc1_file, skiprows=1, delimiter= ',')
     z0_n = pc0.shape[0]
     z1_n = pc1.shape[1]
-    labels_1_n = (pc1[:,-1].astype(int) == 1)
-    labels_2_n = (pc1[:,-1].astype(int) == 2)
+    labels_1_n = (pc1[:,-1].astype(int) == 1).sum()
+    labels_2_n = (pc1[:,-1].astype(int) == 2).sum()
     print('pc0 shape', pc0.shape)
     print('pc1 shape', pc1.shape)
 
