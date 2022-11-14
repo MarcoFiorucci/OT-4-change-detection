@@ -27,12 +27,13 @@ for f in files:
 
     if "Chunks" in f:
         name = name[6:]
-        for i in range(1, 4):
+        for i in range(1, 6):
             try:
                 chunks = int(name[:i])
+                j = i
             except:
                 break
-        dataname = name[i:]
+        dataname = name[j:]
     else:
         if "tmp" in name:
             dataname = name[3:]
@@ -48,7 +49,7 @@ for f in files:
 
 
     dic["chunks"].append(chunks)
-    dic["dataset"].append(name)
+    dic["dataset"].append(dataname)
     dic["method"].append(method)
     dic["IoU"].append(IoU_bin)
     dic["IoU_mc"].append(IoU_mc)
