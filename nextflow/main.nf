@@ -96,6 +96,6 @@ workflow {
         single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
         optimal_transport(pairedPointsclouds)
 
-        double_f.out.map{it -> it[2]}.concat(single_f.out.map{it -> it[2]}, optimal_transport.out).collect().set{results}
+        double_f.out.map{it -> it[1]}.concat(single_f.out.map{it -> it[1]}, optimal_transport.out).collect().set{results}
         final_table(results)
 }

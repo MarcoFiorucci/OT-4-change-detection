@@ -19,7 +19,7 @@ for f in files:
     if OT:
         name = f.split("_")[0]
         method = "OT"
-        IoU_str_name = "IoU"
+        IoU_str_name = "score"
     else:
         method, name = f.split("_")[:2]
         IoU_str_name = "IoU_bin"
@@ -27,7 +27,7 @@ for f in files:
 
     if "Chunks" in f:
         name = name[6:]
-        for i in range(4):
+        for i in range(1, 4):
             try:
                 chunks = int(name[:i])
             except:
