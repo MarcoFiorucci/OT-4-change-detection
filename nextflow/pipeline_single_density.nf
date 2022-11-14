@@ -64,7 +64,7 @@ process post_processing {
         tuple val(NAMES), path(PNG0), path(PNG1), path(NPZ), path(WEIGHTS), path(FILE0), path(FILE1), val(DATANAME)
 
     output:
-        tuple path("*.png"), path("*${DATANAME}*_results.npz")
+        tuple path("*.png"), path("*${DATANAME}*_results.npz"), val(DATANAME)
 
     script:
         """
@@ -72,6 +72,20 @@ process post_processing {
         """
 }
 
+
+process aggregate {
+    publishDir "result/single/", mode: 'symlink'
+    input:
+        tuple path(PNG), path(NPZ), val(DATANAME)
+    output:
+        path("")
+
+    script:
+        py_file = file("python/src/aggregate.py")
+        """
+        python $aggregate
+        """
+}
 
 data = Channel.fromFilePairs("LyonN4/*{0,1}.txt")
 scale = [0.5] //0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0]
@@ -100,9 +114,10 @@ workflow single_f {
         selection.out[0] .splitCsv(skip:1, sep: ',')//.map{it -> it[0]} .view()
             .set{selected}
         estimate_double_density_in_one.out[1].join(selected, by: 0).set{fused}
-        post_processing(fused)
+        post_processing(fused).view()
+        aggregate(post_processing.out.groupTuple(by: 2))
     emit:
-        post_processing.output
+        aggregate.output
 }
 
 workflow {
