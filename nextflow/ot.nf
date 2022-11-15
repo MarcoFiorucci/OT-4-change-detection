@@ -23,9 +23,19 @@ process optimal_transport {
         """
 }
 
+workflow OT {
+    take:
+        paired_data
+    main:
+        optimal_transport(datapairs)
+        aggregate(optimal_transport.out[0].groupTuple(by: 0))
+    emit:
+        aggregate.output
 
+
+}
 
 workflow {
     main:
-        optimal_transport(datapairs)
+        OT(datapairs)
 }

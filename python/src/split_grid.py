@@ -76,7 +76,7 @@ def main():
 
     chunks = recursive_split(table0, table1, xmin, xmax, ymin, ymax, max_point)
 
-    fname = "Chunks{}{}_{}.txt"
+    fname = "Chunks{}-{}_{}.txt"
     dataname = file0.split("0.")[0]
 
     for i, el in enumerate(chunks):

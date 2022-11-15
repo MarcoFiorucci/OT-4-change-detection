@@ -22,7 +22,7 @@ process estimate_double_density_in_one {
 
     script:
         NAME = "${FILE0.baseName}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}_single"
-        DATANAME = "${FILE0}[:-1]"
+        DATANAME = ${FILE0.baseName.split("-")[1].replaceFirst(".$","")}
         """
         python $py_file \
             --csv0 $FILE0 \

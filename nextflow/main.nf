@@ -1,7 +1,7 @@
 
 include { double_f } from './pipeline_double_density.nf'
 include { single_f } from './pipeline_single_density.nf'
-include { optimal_transport } from './ot.nf'
+include { OT } from './ot.nf'
 
 // Parameters
 scale = [1.0, 5.0, 10.0]
@@ -92,10 +92,10 @@ workflow {
             append_columns_headers.out.set{pairedPointsclouds}
             pairedPointsclouds.flatten().set{pointClouds}
         }
-        double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+        // double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
         single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
-        optimal_transport(pairedPointsclouds)
+        // OT(pairedPointsclouds)
 
-        double_f.out.map{it -> it[1]}.concat(single_f.out.map{it -> it[1]}, optimal_transport.out).collect().set{results}
-        final_table(results)
+        // double_f.out.map{it -> it[1]}.concat(single_f.out.map{it -> it[1]}, OT.out).collect().set{results}
+        // final_table(results)
 }
