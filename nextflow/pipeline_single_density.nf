@@ -114,7 +114,8 @@ workflow single_f {
         selection.out[0] .splitCsv(skip:1, sep: ',')//.map{it -> it[0]} .view()
             .set{selected}
         estimate_double_density_in_one.out[1].join(selected, by: 0).set{fused}
-        post_processing(fused).view()
+	fused.view()
+        post_processing(fused)
         aggregate(post_processing.out.groupTuple(by: 2))
     emit:
         aggregate.output
