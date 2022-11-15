@@ -216,9 +216,10 @@ for th in thresholds_y:
     # print('shape of gt ', gt.shape)
      iou_th_y.append(iou_i)
 print('max iou of changes on y:' +  str(max(iou_th_y)))
+best_threshold = thresholds_y[np.array(iou_th_y).argmax()]
 
-
-np.savez(dataname + ".npz", score=max(iou_th_y),
+np.savez(dataname + ".npz", IoU_bin=max(iou_th_y),
+    thresh_bin=best_threshold, changes=changes_intesity_y,
     z0_n=z0_n, z1_n=z1_n, labels_1_n=labels_1_n,
     labels_2_n=labels_2_n)
 

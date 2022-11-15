@@ -28,10 +28,8 @@ for f in files:
     if OT:
         name = f.split("_")[0]
         method = "OT"
-        IoU_str_name = "score"
     else:
         method, name = f.split("_")[:2]
-        IoU_str_name = "IoU_bin"
 
 
     if "Chunks" in f:
@@ -49,7 +47,7 @@ for f in files:
         chunks = 0
     
     
-    IoU_bin = float(npz[IoU_str_name])
+    IoU_bin = float(npz["IoU_bin"])
 
     if OT:
         IoU_mc = 0.0
