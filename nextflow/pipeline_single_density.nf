@@ -17,10 +17,12 @@ process estimate_double_density_in_one {
 
     output:
         path("$NAME" + ".csv")
-        tuple val(NAME), path("$NAME" + "0.png"), path("$NAME" + "1.png"), path("$NAME" + ".npz"), path("$NAME" + ".pth"), path(FILE0), path(FILE1)
+        tuple val(NAME), val(DATANAME), path("$NAME" + ".npz"), path("$NAME" + ".pth"), path(FILE0), path(FILE1)
+        tuple path("$NAME" + "0.png"), path("$NAME" + "1.png")
 
     script:
-        NAME = "${FILE0.baseName}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}_single" 
+        NAME = "${FILE0.baseName}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}_single"
+        DATANAME = "${FILE0}[:-1]"
         """
         python $py_file \
             --csv0 $FILE0 \
@@ -61,11 +63,11 @@ process post_processing {
     label 'gpu'
     publishDir "result/single/${DATANAME[0]}/", mode: 'symlink'
     input:
-        tuple val(NAMES), path(PNG0), path(PNG1), path(NPZ), path(WEIGHTS), path(FILE0), path(FILE1), val(DATANAME)
+        tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE0), path(FILE1), val(CHUNK_ID)
 
     output:
-        tuple path("*.png"), path("*${DATANAME}*_results.npz"), val(DATANAME)
-
+        tuple val(DATANAMES), path("*${DATANAME}*_results.npz"), val(CHUNKS_ID)
+        path("*.png")
     script:
         """
         python $process single ${WEIGHTS} ${FILE0} ${FILE1} ${NPZ}
@@ -76,7 +78,7 @@ process post_processing {
 process aggregate {
     publishDir "result/single/", mode: 'symlink'
     input:
-        tuple path(PNG), path(NPZ), val(DATANAME)
+        tuple val(DATANAME), path(NPZ), val(CHUNKS_ID)
     output:
         path("")
 
