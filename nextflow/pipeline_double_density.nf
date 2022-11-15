@@ -1,4 +1,6 @@
 
+include { aggregate } from './pipeline_single_density.nf'
+
 py_file = file("python/src/main_estimate.py")
 process estimate_density {
     label 'gpu'
@@ -15,10 +17,12 @@ process estimate_density {
 
     output:
         path("$NAME" + ".csv")
-        tuple val(NAME), path("$NAME" + ".png"), path("$NAME" + ".npz"), path("$NAME" + ".pth"), path(FILE)
+        tuple val(NAME), val(DATANAME), path("$NAME" + ".npz"), path("$NAME" + ".pth"), path(FILE)
+        path("$NAME" + ".png")
 
     script:
         NAME = "${FILE.baseName}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}_double" 
+        DATANAME = "${FILE}[:-1]"
         """
         python $py_file \
             --csv0 $FILE \
@@ -57,10 +61,11 @@ process post_processing {
     label 'gpu'
     publishDir "result/double/${DATANAME[0]}/", mode: 'symlink'
     input:
-        tuple val(NAMES), path(PNG), path(NPZ), path(WEIGHTS), path(FILE), val(DATANAME)
+        tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE), val(CHUNK_ID)
 
     output:
-        tuple path("*.png"), path("*${DATANAME[0]}*_results.npz")
+        tuple val(DATANAMES), path("*${DATANAME[0]}*_results.npz"), val(CHUNKS_ID)
+        path("*.png")
 
     script:
         """
@@ -88,8 +93,9 @@ workflow double_f {
         selection(training_scores)
         selection.out[0] .splitCsv(skip:1, sep: ',')//.map{it -> it[0]} .view()
             .set{selected}
-        estimate_density.out[1].join(selected, by: 0).groupTuple(by: 5).set{fused}
+        estimate_density.out[1].join(selected, by: 0).groupTuple(by: [1, 5]).set{fused}
         post_processing(fused)
+        aggregate(post_processing.out.groupTuple(by: 2))
     emit:
         post_processing.output
 }

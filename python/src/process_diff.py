@@ -115,7 +115,6 @@ for thresh in np.arange(0, diff_z_on1.max(), step=std):
     if score_bin > best_score_bin:
         best_score_bin = score_bin
         best_thresh_bin = thresh
-        final_pred_bin = (y_pred > 0).astype(int)
 
 
 
