@@ -80,7 +80,7 @@ process aggregate {
     input:
         tuple val(DATANAME), path(NPZ), val(CHUNKS_ID)
     output:
-        path("")
+        path("${DATANAME}.npz")
 
     script:
         py_file = file("python/src/aggregate.py")
@@ -118,7 +118,7 @@ workflow single_f {
         estimate_double_density_in_one.out[1].join(selected, by: 0).set{fused}
 	fused.view()
         post_processing(fused)
-        aggregate(post_processing.out.groupTuple(by: 2))
+        aggregate(post_processing.out[0].groupTuple(by: 0))
     emit:
         aggregate.output
 }

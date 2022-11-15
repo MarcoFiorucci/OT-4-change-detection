@@ -95,9 +95,9 @@ workflow double_f {
             .set{selected}
         estimate_density.out[1].join(selected, by: 0).groupTuple(by: [1, 5]).set{fused}
         post_processing(fused)
-        aggregate(post_processing.out.groupTuple(by: 2))
+        aggregate(post_processing.out[0].groupTuple(by: 2))
     emit:
-        post_processing.output
+        aggregate.output
 }
 
     
