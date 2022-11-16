@@ -219,7 +219,7 @@ best_threshold = thresholds_y[np.array(iou_th_y).argmax()]
 np.savez(dataname + ".npz", IoU_bin=max(iou_th_y),
     thresh_bin=best_threshold, changes=changes_intesity_y,
     z0_n=z0_n, z1_n=z1_n, labels_1_n=labels_1_n,
-    labels_2_n=labels_2_n, y_on1=pc1[:,-1])
+    labels_2_n=labels_2_n, labels_on1=pc1[:,-1])
 
 if(visualization == True):
     print('----------------------------------')

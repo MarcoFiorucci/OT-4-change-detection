@@ -10,7 +10,7 @@ def open_npz_compute(f, OT=False):
     gt = file["labels_on1"]
     th = file["thresh_bin"]
     if OT:
-        z = file["changes_intesity_y"]
+        z = file["changes"]
     else:
         z = file["z1_on1"] - file["z0_on1"]
     pred = np.zeros_like(z).astype(int)
