@@ -5,7 +5,7 @@ py_file = file("python/src/main_estimate.py")
 process estimate_density {
     label 'gpu'
     input:
-        each path(FILE)
+        tuple val(DATANAME), path(FILE)
         each SCALE
         each FOUR
         each MAPPINGSIZE
@@ -22,7 +22,6 @@ process estimate_density {
 
     script:
         NAME = "${FILE.baseName}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}_double" 
-        DATANAME = "${FILE}[:-1]"
         """
         python $py_file \
             --csv0 $FILE \
@@ -59,12 +58,12 @@ process = file("python/src/process_diff.py")
 
 process post_processing {
     label 'gpu'
-    publishDir "result/double/${DATANAME[0]}/", mode: 'symlink'
+    publishDir "result/double/${DATANAMES}/", mode: 'symlink'
     input:
         tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE), val(CHUNK_ID)
 
     output:
-        tuple val(DATANAMES), path("*${DATANAME[0]}*_results.npz"), val(CHUNKS_ID)
+        tuple val("${DATANAMES}"), path("*${DATANAMES[0]}*_results.npz")
         path("*.png")
 
     script:
@@ -95,7 +94,7 @@ workflow double_f {
             .set{selected}
         estimate_density.out[1].join(selected, by: 0).groupTuple(by: [1, 5]).set{fused}
         post_processing(fused)
-        aggregate(post_processing.out[0].groupTuple(by: 2))
+        aggregate(post_processing.out[0].groupTuple(by: 0), "double")
     emit:
         aggregate.output
 }

@@ -72,12 +72,13 @@ process final_table {
     input:
         file(results)
     output:
-        tuple file("final_results.csv"), file("before_mean_results.csv")
-
+        // tuple file("final_results.csv"), file("before_mean_results.csv")
+        file("benchmark.csv")
     script:
-        py_file = file("python/src/regroup.py")
+        py_file = file("python/src/regroup_csv.py")
         """
         python $py_file
+
         """
 }
 
@@ -87,17 +88,18 @@ workflow {
         if (ext == "ply"){
             from_ply_to_txt(paired_ply)
             into_chunks(from_ply_to_txt.out, MAX_POINT)
-            into_chunks.out.flatMap{it -> it[1].stream().map(el -> [it[0], el]).collect()}.buffer(size: 2).map{it -> [it[0][0], it[0][1], it[1][1]]}.set{pairedPointsclouds}
+            into_chunks.out.flatMap{it -> it[1].stream().map(el -> [it[0], el]).collect()}.set{pointClouds}
+            pointClouds.buffer(size: 2).map{it -> [it[0][0], it[0][1], it[1][1]]}.set{pairedPointsclouds}
         } else {
             append_columns_headers(paired_txt)
             append_columns_headers.out.set{pairedPointsclouds}
             pairedPointsclouds.flatten().set{pointClouds}
         }
         //pairedPointsclouds.view()
-        // double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+        double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
         single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
-        // OT(pairedPointsclouds)
-
+        OT(pairedPointsclouds)
+        double_f.out.concat(single_f.out, OT.out).collect().set{results}
         // double_f.out.map{it -> it[1]}.concat(single_f.out.map{it -> it[1]}, OT.out).collect().set{results}
-        // final_table(results)
+        final_table(results)
 }

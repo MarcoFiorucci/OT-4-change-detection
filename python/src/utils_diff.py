@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from function_estimation import Model, input_mapping, predict_loop, DataLoader, predict_loop
 from math import ceil, floor
+from sklearn.metrics import jaccard_score
 
 def load_csv_weight_npz(csv_file0, csv_file1, weight, npz, name, time=-1):
 
@@ -89,3 +90,35 @@ def predict_z(model, B, nv, grid_indices, bs=2048, workers=1, time=0):
     z = np.array(z.cpu())
     z = z * nv[2][1] + nv[2][0]
     return z
+
+def compute_iou(diffz, y, mc=True):
+    best_score_bin = 0
+    best_thresh_bin = 0
+    final_pred_bin = None
+    if mc:
+        best_score = 0
+        best_thresh = 0
+        final_pred = None
+    std = np.std(diffz)
+    for thresh in np.arange(0, diffz.max(), step=std):
+        y_pred = np.zeros_like(y)
+        y_pred[diffz > thresh] = 1
+        y_pred[diffz < -thresh] = 2
+        if mc:
+            score = jaccard_score(y, y_pred, average=None)
+            score = np.mean(score[1:])
+            if score > best_score:
+                best_score = score
+                best_thresh = thresh
+                final_pred = y_pred
+        score_bin = jaccard_score(y > 0, y_pred > 0)
+        if score_bin > best_score_bin:
+            best_score_bin = score_bin
+            best_thresh_bin = thresh
+            final_pred_bin = y_pred > 0
+    out_bin = best_score_bin, best_thresh_bin, final_pred_bin
+    if mc:
+        out_mc = best_score,  best_thresh, final_pred
+        return out_bin, out_mc
+    else:
+        return out_bin

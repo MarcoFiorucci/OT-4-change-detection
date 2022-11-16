@@ -188,10 +188,8 @@ def iou(gt, prediction):
      iou_score = np.sum(intersection) / np.sum(union)
      return iou_score
 
-if pc1.shape[1] > 4:
-    gt = pc1[:,6]
-else:
-    gt = pc1[:,3]
+gt = pc1[:,-1]
+
 #change gt: 0 no change, 1 changes (both positive and negative changes)
 idxs = np.where(gt == 2)
 gt[idxs] = 1
@@ -221,7 +219,7 @@ best_threshold = thresholds_y[np.array(iou_th_y).argmax()]
 np.savez(dataname + ".npz", IoU_bin=max(iou_th_y),
     thresh_bin=best_threshold, changes=changes_intesity_y,
     z0_n=z0_n, z1_n=z1_n, labels_1_n=labels_1_n,
-    labels_2_n=labels_2_n, y_on1=pc1[:,3])
+    labels_2_n=labels_2_n, y_on1=pc1[:,-1])
 
 if(visualization == True):
     print('----------------------------------')

@@ -61,12 +61,12 @@ process = file("python/src/process_diff.py")
 
 process post_processing {
     label 'gpu'
-    publishDir "result/single/${DATANAME[0]}/", mode: 'symlink'
+    publishDir "result/single/${DATANAMES[0]}/", mode: 'symlink'
     input:
         tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE0), path(FILE1), val(CHUNK_ID)
 
     output:
-        tuple val(DATANAMES), path("*${DATANAME}*_results.npz")
+        tuple val(DATANAMES), path("*${DATANAMES}*_results.npz")
         path("*.png")
     script:
         """
@@ -76,16 +76,17 @@ process post_processing {
 
 
 process aggregate {
-    publishDir "result/single/", mode: 'symlink'
+    publishDir "result/${TYPE}/", mode: 'symlink'
     input:
         tuple val(DATANAME), path(NPZ)
+        val(TYPE)
     output:
-        path("${DATANAME}.npz")
+        path("${DATANAME}_${TYPE}.csv")
 
     script:
         py_file = file("python/src/aggregate.py")
         """
-        python $aggregate
+        python $py_file $DATANAME $TYPE
         """
 }
 
@@ -117,7 +118,7 @@ workflow single_f {
             .set{selected}
         estimate_double_density_in_one.out[1].join(selected, by: 0).set{fused}
         post_processing(fused)
-        aggregate(post_processing.out[0].groupTuple(by: 0))
+        aggregate(post_processing.out[0].groupTuple(by: 0), "single")
     emit:
         aggregate.output
 }

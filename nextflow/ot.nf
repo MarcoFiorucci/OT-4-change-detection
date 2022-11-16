@@ -1,6 +1,7 @@
 
-data = Channel.fromFilePairs("data/clippeddata/*{0,1}.txt")
-data.map{it -> it[1]}.set {datapairs}
+datapairs = Channel.fromFilePairs("data/clippeddata/*{0,1}.txt")
+
+include { aggregate } from './pipeline_single_density.nf'
 
 py_file = file("python/ot/ot_change_detection.py")
 
@@ -8,13 +9,13 @@ process optimal_transport {
     publishDir "result/OT/"
     label 'OT'
     input:
-        tuple file(FILE0), file(FILE1)
+        tuple val(DATANAME), file(FILE0), file(FILE1)
 
     output:
-        path("$NAME" + ".npz")
+        tuple val(DATANAME), path("$NAME" + ".npz")
 
     script:
-        NAME = "${FILE0.baseName}__OT" 
+        NAME = "${FILE0}__OT" 
         """
         python $py_file \
             --csv0 $FILE0 \
@@ -27,8 +28,8 @@ workflow OT {
     take:
         paired_data
     main:
-        optimal_transport(datapairs)
-        aggregate(optimal_transport.out[0].groupTuple(by: 0))
+        optimal_transport(paired_data)
+        aggregate(optimal_transport.out[0].groupTuple(by: 0), "OT")
     emit:
         aggregate.output
 

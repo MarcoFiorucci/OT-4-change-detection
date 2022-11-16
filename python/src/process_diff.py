@@ -1,9 +1,8 @@
 import sys
 import numpy as np
-from utils_diff import load_csv_weight_npz, define_grid, predict_z
+from utils_diff import load_csv_weight_npz, define_grid, predict_z, compute_iou
 from plotpoint import fig_3d
 import pandas as pd
-from sklearn.metrics import jaccard_score
 
 double = sys.argv[1]
 if double == "double":
@@ -88,33 +87,11 @@ z1_ongrid = predict_z(model1, B1, nv1, xy_grid, time=time1)
 
 
 diff_z = z1_ongrid - z0_ongrid
-
 y_on1 = table1["label"].values
 # compute IoU
-std = np.std(diff_z_on1)
-best_score = 0
-best_thresh = 0
-final_pred = None
-best_score_bin = 0
-best_thresh_bin = 0
-final_pred_bin = None
-
-
-for thresh in np.arange(0, diff_z_on1.max(), step=std):
-    y_pred = np.zeros_like(y_on1)
-    y_pred[diff_z_on1 > thresh] = 1
-    y_pred[diff_z_on1 < -thresh] = 2
-    score = jaccard_score(y_on1, y_pred, average=None)
-    score = np.mean(score[1:])
-    score_bin = jaccard_score(y_on1 > 0, y_pred > 0)
-    if score > best_score:
-        best_score = score
-        best_thresh = thresh
-        final_pred = y_pred
-    if score_bin > best_score_bin:
-        best_score_bin = score_bin
-        best_thresh_bin = thresh
-
+bin_score, mc_score = compute_iou(diff_z_on1, y_on1)
+iou_bin, thresh_bin, pred_bin = bin_score
+iou_mc, thresh_mc, pred_mc = mc_score
 
 
 
@@ -130,25 +107,51 @@ result = pd.merge(grid_pd, table1_copy, on=["X", "Y"], how="left")
 # result.label = result.label.fill_na(0)
 
 
+size1 = table1.X.shape[0]
 
-fig = fig_3d(table1.X, table1.Y, diff_z_on1, y_on1)
+if size1 > 1e6:
+    factor = 10
+elif size1 > 5e5:
+    factor = 5
+elif size1 > 1e5:
+    factor = 1
+elif size1 > 5e4:
+    factor = 1
+elif size1 > 1e4:
+    factor = 1
+else: 
+    factor = 1
+
+idx = np.arange(size1)
+np.random.shuffle(idx)
+idx = idx[:size1 // factor]
+
+sub_X = table1.X.values[idx]
+sub_Y = table1.X.values[idx]
+sub_Z = table1.Z.values[idx]
+sub_diff_z_on1 = diff_z_on1[idx]
+sub_y_on1 = y_on1[idx]
+sub_z1_on1 = z1_on1[idx]
+sub_z0_on1 = z0_on1[idx]
+sub_pred_mc = pred_mc[idx]
+
+fig = fig_3d(sub_X, sub_Y, sub_diff_z_on1, sub_y_on1)
 name_png = f"diff_{dataname}_labels_on_z1.png"
 fig.write_image(name_png)
 
-fig = fig_3d(table1.X, table1.Y, diff_z_on1, final_pred)
+fig = fig_3d(sub_X, sub_Y, sub_diff_z_on1, sub_pred_mc)
 name_png = f"diff_{dataname}_pred_on_z1.png"
 fig.write_image(name_png)
-fig.show()
 
-fig = fig_3d(table1.X, table1.Y, table1.Z, final_pred)
+fig = fig_3d(sub_X, sub_Y, sub_Z, sub_pred_mc)
 name_png = f"{dataname}_z1_on_z1.png"
 fig.write_image(name_png)
 
-fig = fig_3d(table1.X, table1.Y, z1_on1, final_pred)
+fig = fig_3d(table1.X, table1.Y, sub_z1_on1, sub_pred_mc)
 name_png = f"{dataname}_predz1_on_z1.png"
 fig.write_image(name_png)
 
-fig = fig_3d(table1.X, table1.Y, z0_on1, final_pred)
+fig = fig_3d(table1.X, table1.Y, sub_z0_on1, sub_pred_mc)
 name_png = f"{dataname}_predz0_on_z1.png"
 fig.write_image(name_png)
 
@@ -156,7 +159,6 @@ fig.write_image(name_png)
 fig = fig_3d(grid_indices[:,0], grid_indices[:,1], diff_z, result.label)
 name_png = f"diff_{dataname}_labels.png"
 fig.write_image(name_png)
-fig.show()
 
 fig = fig_3d(grid_indices[:,0], grid_indices[:,1], diff_z, diff_z)
 name_png = f"diff_{dataname}.png"
@@ -165,11 +167,12 @@ fig.write_image(name_png)
 # compute IoU
 
 name_npz = f"{double}_{dataname}_results.npz"
+
 np.savez(name_npz, indices=grid_indices, 
     z0_on1=z0_on1,  z1_on1=z1_on1, 
     z0_ongrid=z0_ongrid, z1_ongrid=z1_ongrid, 
     labels_on1=y_on1, labels_ongrid=result.label,
-    IoU_mc=best_score, thresh_mc=best_thresh,
-    IoU_bin=best_score_bin, thresh_bin=best_thresh_bin,
+    IoU_mc=iou_mc, thresh_mc=thresh_mc,
+    IoU_bin=iou_bin, thresh_bin=thresh_bin,
     z0_n=z0_n, z1_n=z1_n, labels_1_n=labels_1_n, labels_2_n=labels_2_n)
 
