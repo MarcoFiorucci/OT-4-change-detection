@@ -72,7 +72,6 @@ process final_table {
     input:
         file(results)
     output:
-        // tuple file("final_results.csv"), file("before_mean_results.csv")
         file("benchmark.csv")
     script:
         py_file = file("python/src/regroup_csv.py")
@@ -95,11 +94,11 @@ workflow {
             append_columns_headers.out.set{pairedPointsclouds}
             pairedPointsclouds.flatten().set{pointClouds}
         }
-        //pairedPointsclouds.view()
-        // double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
-        // single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+
+        double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+        single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
         OT(pairedPointsclouds)
         double_f.out.concat(single_f.out, OT.out).collect().set{results}
-        // double_f.out.map{it -> it[1]}.concat(single_f.out.map{it -> it[1]}, OT.out).collect().set{results}
+
         final_table(results)
 }
