@@ -4,17 +4,17 @@ include { single_f } from './pipeline_single_density.nf'
 include { OT } from './ot.nf'
 
 // Parameters
-scale = [1.0]//, 5.0, 10.0]
+scale = [1.0, 5.0, 10.0]
 fourier = ["--fourier"]
 norm = ["one_minus"]
-lr = [0.001]//, 0.01]
+lr = [0.001, 0.01]
 mapping_size = [512]
 act = ["relu"]
-epoch = [10]
+epoch = [100]
 wd = [0.0001]
 params.extension = "ply"
 ext = params.extension
-MAX_POINT = 3000000//30000
+MAX_POINT = 30000
 
 // Data
 paired_ply = Channel.fromFilePairs("data/full_data/pointCloud{0,1}.ply")
