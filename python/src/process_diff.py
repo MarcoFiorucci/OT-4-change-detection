@@ -56,7 +56,6 @@ else:
     time = 1
 
     dataname = weight.split("__")[0]
-    tag = int(weight.split("__")[0][-1])
     name = weight.split(".p")[0]
 
     table, model, B, nv = load_csv_weight_npz(csvfile0, csvfile1, weight, npz, name, time)

@@ -4,17 +4,17 @@ include { single_f } from './pipeline_single_density.nf'
 include { OT } from './ot.nf'
 
 // Parameters
-scale = [1.0, 5.0, 10.0]
+scale = [1.0]//, 5.0, 10.0]
 fourier = ["--fourier"]
 norm = ["one_minus"]
-lr = [0.001, 0.01]
+lr = [0.001]//, 0.01]
 mapping_size = [512]
 act = ["relu"]
-epoch = [60]
+epoch = [10]
 wd = [0.0001]
 params.extension = "ply"
 ext = params.extension
-MAX_POINT = 30000
+MAX_POINT = 3000000//30000
 
 // Data
 paired_ply = Channel.fromFilePairs("data/full_data/pointCloud{0,1}.ply")
@@ -40,12 +40,14 @@ process into_chunks {
         file(paired_file)
         val max_point
     output:
-        path("*Chunks*{0,1}.txt")
+        tuple val(DATANAME), path("*Chunks*{0,1}.txt")//.collate(2)//.buffer( size: 2 , skip:0 )
     script:
         pyfile = file("python/src/split_grid.py")
+        file0 = paired_file[0]
+        file1 = paired_file[1]
+        DATANAME = "${file0}".replaceFirst(/0.txt/, "")
         """
-        python $pyfile ${paired_file[0]} ${paired_file[1]} ${max_point}
-
+        python $pyfile ${file0} ${file1} ${max_point}
         """
 }
 
@@ -85,13 +87,13 @@ workflow {
         if (ext == "ply"){
             from_ply_to_txt(paired_ply)
             into_chunks(from_ply_to_txt.out, MAX_POINT)
-            into_chunks.out.flatten().set{pointClouds}
-            pointClouds.buffer( size: 2 , skip:0 ).set{pairedPointsclouds}
+            into_chunks.out.flatMap{it -> it[1].stream().map(el -> [it[0], el]).collect()}.buffer(size: 2).map{it -> [it[0][0], it[0][1], it[1][1]]}.set{pairedPointsclouds}
         } else {
             append_columns_headers(paired_txt)
             append_columns_headers.out.set{pairedPointsclouds}
             pairedPointsclouds.flatten().set{pointClouds}
         }
+        //pairedPointsclouds.view()
         // double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
         single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
         // OT(pairedPointsclouds)

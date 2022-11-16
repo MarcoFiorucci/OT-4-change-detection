@@ -5,7 +5,7 @@ py_file = file("python/src/main_estimate.py")
 process estimate_double_density_in_one {
     label 'gpu'
     input:
-        tuple file(FILE0), file(FILE1)
+        tuple val(DATANAME), file(FILE0), file(FILE1)
         each SCALE
         each FOUR
         each MAPPINGSIZE
@@ -21,8 +21,8 @@ process estimate_double_density_in_one {
         tuple path("$NAME" + "0.png"), path("$NAME" + "1.png")
 
     script:
-        NAME = "${FILE0.baseName}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}_single"
-        DATANAME = "${FILE0.baseName.split('-')[1].replaceFirst('.$','')}"
+        CHUNK_ID = FILE0.baseName.split("-")[0]
+        NAME = "${CHUNK_ID}-${DATANAME}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}_single"
         """
         python $py_file \
             --csv0 $FILE0 \
@@ -66,7 +66,7 @@ process post_processing {
         tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE0), path(FILE1), val(CHUNK_ID)
 
     output:
-        tuple val(DATANAMES), path("*${DATANAME}*_results.npz"), val(CHUNKS_ID)
+        tuple val(DATANAMES), path("*${DATANAME}*_results.npz")
         path("*.png")
     script:
         """
@@ -78,7 +78,7 @@ process post_processing {
 process aggregate {
     publishDir "result/single/", mode: 'symlink'
     input:
-        tuple val(DATANAME), path(NPZ), val(CHUNKS_ID)
+        tuple val(DATANAME), path(NPZ)
     output:
         path("${DATANAME}.npz")
 
@@ -113,10 +113,9 @@ workflow single_f {
         //estimate_density.out[0]
         estimate_double_density_in_one.out[0].collectFile(name:"together.csv", keepHeader: true, skip:1).set{training_scores}
         selection(training_scores)
-        selection.out[0] .splitCsv(skip:1, sep: ',')//.map{it -> it[0]} .view()
+        selection.out[0] .splitCsv(skip:1, sep: ',')
             .set{selected}
         estimate_double_density_in_one.out[1].join(selected, by: 0).set{fused}
-	fused.view()
         post_processing(fused)
         aggregate(post_processing.out[0].groupTuple(by: 0))
     emit:
