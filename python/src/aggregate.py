@@ -2,7 +2,7 @@
 import numpy as np
 from glob import glob
 import sys
-from utils_diff import compute_iou
+from utils import compute_iou
 import pandas as pd
 
 def open_npz_compute(f, OT=False):

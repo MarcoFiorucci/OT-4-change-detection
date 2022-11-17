@@ -1,6 +1,7 @@
 import sys
 import numpy as np
-from utils_diff import load_csv_weight_npz, define_grid, predict_z, compute_iou
+from utils_diff import load_csv_weight_npz, define_grid, predict_z
+from utils import compute_iou
 from plotpoint import fig_3d
 import pandas as pd
 

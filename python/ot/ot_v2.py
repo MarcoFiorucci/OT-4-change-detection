@@ -7,7 +7,7 @@ from ott.tools import transport
 
 import ot
 import argparse
-from utils_diff import compute_iou
+from utils import compute_iou
 
 def parser_f():
 
