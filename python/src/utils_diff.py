@@ -94,11 +94,11 @@ def predict_z(model, B, nv, grid_indices, bs=2048, workers=1, time=0):
 def compute_iou(diffz, y, mc=True):
     best_score_bin = 0
     best_thresh_bin = 0
-    final_pred_bin = None
+    final_pred_bin = np.zeros_like(y)
     if mc:
         best_score = 0
         best_thresh = 0
-        final_pred = None
+        final_pred = np.zeros_like(y)
     std = np.std(diffz)
     for thresh in np.arange(0, diffz.max(), step=std):
         y_pred = np.zeros_like(y)

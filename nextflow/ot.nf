@@ -3,7 +3,7 @@ datapairs = Channel.fromFilePairs("data/clippeddata/*{0,1}.txt")
 
 include { aggregate } from './pipeline_single_density.nf'
 
-py_file = file("python/ot/ot_change_detection.py")
+py_file = file("python/ot/ot_v2.py")
 
 process optimal_transport {
     publishDir "result/OT/"
