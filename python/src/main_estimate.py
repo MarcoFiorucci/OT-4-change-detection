@@ -23,7 +23,7 @@ def main():
     csv_file = opt.name + ".csv"
     activation = opt.activation
 
-    train, test, B, nv = return_dataset(csv0, csv1, bs=bs, workers=workers, mapping_size=mapping_size, fourier=fourier, normalize=normalize, scale=scale, time=not time)
+    train, test, B, nv = return_dataset(csv0, csv1, bs=bs, workers=workers, mapping_size=mapping_size, fourier=fourier, normalize=normalize, scale=scale, time=not time, gradient_regul=opt.gradient_regul)
 
     model = Model(train.input_size, activation=activation)
     # model = model.float()
@@ -33,7 +33,7 @@ def main():
         "epoch": opt.epochs,
         "wd": opt.wd
     }
-    model, best_score = estimate_density(train, test, model, hp, weight_file)
+    model, best_score = estimate_density(train, test, model, hp, weight_file, lambda_t=opt.lambda_t, gradient_regul=opt.gradient_regul)
 
     ds_predict0, xyz0 = return_dataset_prediction(csv0, csv1, bs=bs, workers=workers, fourier=fourier, B=B, nv=nv, time=time)
     predictions0 = predict_loop(ds_predict0, model.eval())

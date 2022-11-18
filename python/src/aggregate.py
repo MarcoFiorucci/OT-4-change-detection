@@ -3,6 +3,8 @@ import numpy as np
 from glob import glob
 import sys
 from utils import compute_iou
+from sklearn.metrics import accuracy_score
+from scipy.stats import pearsonr
 import pandas as pd
 
 def open_npz_compute(f, OT=False):
@@ -28,6 +30,7 @@ is_OT = method == "OT"
 diff_z, prediction, gt = [], [], []
 iou_chunks, chunk_id, size = [], [], []
 max_changes, min_changes, labels = [], [], []
+acc, pearson = [], []
 
 for f in files:
     z_f, gt_f, yhat, iou = open_npz_compute(f, is_OT)
@@ -40,6 +43,8 @@ for f in files:
     min_changes.append(z_f.min())
     size.append(z_f.shape[0])
     labels.append((gt_f != 0).sum())
+    acc.append(accuracy_score(gt_f, yhat))
+    pearson.append(pearsonr(gt_f, yhat)[0])
 
 
 tmp_table = pd.DataFrame(
@@ -48,7 +53,9 @@ tmp_table = pd.DataFrame(
     "max_changes": max_changes,
     "min_changes": min_changes,
     "nlabels": labels,
-    "size": size
+    "size": size,
+    "acc": acc,
+    "pearson": pearson
     }
 )
 

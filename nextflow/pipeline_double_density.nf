@@ -40,7 +40,7 @@ process estimate_density {
 
 pyselect = file("python/src/selectbest.py")
 process selection {
-    publishDir "result/double", mode: 'symlink'
+    publishDir "result/double/selection", mode: 'symlink'
     input:
         path(CSV)
 
@@ -60,15 +60,15 @@ process post_processing {
     label 'gpu'
     publishDir "result/double/${DATANAMES}/", mode: 'symlink'
     input:
-        tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE), val(CHUNK_ID)
+        tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE), val(CHUNK_ID), val(METHOD)
 
     output:
-        tuple val("${DATANAMES}"), path("*${DATANAMES[0]}*_results.npz")
+        tuple val(DATANAMES), val("${METHOD[0]}"), path("*${DATANAMES[0]}*_results.npz")
         path("*.png")
 
     script:
         """
-        python $process double ${WEIGHTS[0]} ${WEIGHTS[1]} ${FILE[0]} ${FILE[1]} ${NPZ[0]} ${NPZ[1]}
+        python $process ${METHOD[0]} ${WEIGHTS[0]} ${WEIGHTS[1]} ${FILE[0]} ${FILE[1]} ${NPZ[0]} ${NPZ[1]}
         """
 }
 
@@ -87,14 +87,13 @@ workflow double_f {
         epoch
     main:
         estimate_density(data, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
-        //estimate_density.out[0]
         estimate_density.out[0].collectFile(name:"together.csv", keepHeader: true, skip:1).set{training_scores}
         selection(training_scores)
-        selection.out[0] .splitCsv(skip:1, sep: ',')//.map{it -> it[0]} .view()
+        selection.out[0] .splitCsv(skip:1, sep: ',')
             .set{selected}
         estimate_density.out[1].join(selected, by: 0).groupTuple(by: [1, 5]).set{fused}
         post_processing(fused)
-        aggregate(post_processing.out[0].groupTuple(by: 0), "double")
+        aggregate(post_processing.out[0].groupTuple(by: [0, 1]))
     emit:
         aggregate.out[0]
 }

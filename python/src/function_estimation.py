@@ -17,7 +17,7 @@ def input_mapping(x, B):
 
 class XYZ(Dataset):
 
-    def __init__(self, csv_file0, csv_file1, train=False, train_fraction=0.8, fourier=False, seed=42, predict=False, scale=1.0, mapping_size=256, B=None, normalize="mean", nv=None, time=False):
+    def __init__(self, csv_file0, csv_file1, train=False, train_fraction=0.8, fourier=False, seed=42, predict=False, scale=1.0, mapping_size=256, B=None, normalize="mean", nv=None, time=False, gradient_regul=False):
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -57,7 +57,7 @@ class XYZ(Dataset):
                 self.nv = nv
             for i, var in enumerate(self.table.columns[:-1]):
                 self.table[var] = (self.table[var] - self.nv[i][0]) / self.nv[i][1]
-
+        self.grad_regul = gradient_regul
         self.fourier = fourier
         self.time = time
         self.input_size = 3 if self.time else 2
@@ -79,6 +79,8 @@ class XYZ(Dataset):
         if self.time:
             t = self.table.loc[idx, 'T']
             sample = np.array([x, y, t])
+            if self.grad_regul:
+                sample_t = np.array([x, y, 1-t])
         else:
             sample = np.array([x, y])
 
@@ -86,11 +88,15 @@ class XYZ(Dataset):
 
         if self.fourier:
             sample = self.fourier_transform(sample)
-
+            if self.grad_regul:
+                sample_t = self.fourier_transform(sample_t)
+                sample_t = torch.tensor(sample_t).float()
         sample = torch.tensor(sample).float()
         target = target.astype(np.float32)
-
-        return sample, target
+        if self.grad_regul:
+            return sample, sample_t, target
+        else:
+            return sample, target
 
     def fourier_transform(self, sample):
         t_sample = input_mapping(sample, self.B)
@@ -171,8 +177,8 @@ def return_dataset_prediction(csv0, csv1, bs=2048, workers=8, fourier=False, B=N
     )
     return loader, xyz
 
-def return_dataset(csv0, csv1=None, bs=2048, workers=8, mapping_size=256, fourier=False, normalize="mean", scale=1.0, time=False):
-    xyz_train = XYZ(csv0, csv1, train=True, mapping_size=mapping_size, fourier=fourier, scale=scale, normalize=normalize, time=time)
+def return_dataset(csv0, csv1=None, bs=2048, workers=8, mapping_size=256, fourier=False, normalize="mean", scale=1.0, time=False, gradient_regul=False):
+    xyz_train = XYZ(csv0, csv1, train=True, mapping_size=mapping_size, fourier=fourier, scale=scale, normalize=normalize, time=time, gradient_regul=gradient_regul)
     nv = xyz_train.nv
     B = xyz_train.B if fourier else None
     xyz_test = XYZ(csv0, csv1, train=False, mapping_size=mapping_size, fourier=fourier, B=B, normalize=normalize, nv=nv, time=time)
@@ -225,9 +231,11 @@ def test_loop(dataloader, model, loss_fn):
     print(f"\n Test Error: \n Avg loss: {test_loss:>8f} \n")
     return test_loss
 
-def estimate_density(dataset, dataset_test, model, hp, name):
+def estimate_density(dataset, dataset_test, model, hp, name, lambda_t=1.0, gradient_regul=False):
     optimizer = torch.optim.Adam(model.parameters(), lr=hp['lr'], weight_decay=hp['wd'])
     loss_fn = nn.MSELoss()
+    if gradient_regul:
+        loss_fn_t = nn.L1Loss()
     model.train()
     best_test_score = np.inf
     best_epoch = 0
@@ -237,12 +245,19 @@ def estimate_density(dataset, dataset_test, model, hp, name):
         for data_tuple in train_bar:
             with torch.autograd.set_detect_anomaly(True):
                 optimizer.zero_grad()
-
-                inp, target = data_tuple
-                
+                if gradient_regul:
+                    inp, inp_t, target = data_tuple
+                else:
+                    inp, target = data_tuple
+                    
                 inp, target = inp.cuda(non_blocking=True), target.cuda(non_blocking=True)
                 target_pred = model(inp)
                 loss = loss_fn(target_pred, target)
+
+                if gradient_regul:
+                    inp_t = inp_t.cuda(non_blocking=True)
+                    target_pred_t = model(inp_t)
+                    loss += lambda_t * loss_fn_t(target_pred, target_pred_t)
 
                 loss.backward()
                 optimizer.step()
@@ -374,6 +389,12 @@ def parser_f():
         default=0.0005,
         type=float,
     )
+    parser.add_argument(
+        "--lambda_t",
+        default=0.,
+        type=float,
+    )
     args = parser.parse_args()
+    args.gradient_regul = args.lambda_t != 0
     return args
 

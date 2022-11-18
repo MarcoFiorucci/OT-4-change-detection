@@ -7,3 +7,6 @@ full_data:
 
 clipped:
 	nextflow run nextflow/main.nf -resume --extension txt -profile raiden
+
+clipped_home:
+	nextflow run nextflow/main.nf -resume --extension txt

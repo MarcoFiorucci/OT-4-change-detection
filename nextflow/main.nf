@@ -4,14 +4,15 @@ include { single_f } from './pipeline_single_density.nf'
 include { OT } from './ot.nf'
 
 // Parameters
-scale = [1.0, 5.0, 10.0]
+scale = [1.0, 5.0]
 fourier = ["--fourier"]
 norm = ["one_minus"]
-lr = [0.001, 0.01]
+lr = [0.001, 0.01, 0.1]
 mapping_size = [512]
 act = ["relu"]
 epoch = [100]
 wd = [0.0001]
+lambda_t = [0.0, 0.01, 1.0, 10.]
 params.extension = "ply"
 ext = params.extension
 MAX_POINT = 30000
@@ -55,7 +56,7 @@ process append_columns_headers {
     input:
         tuple val(key), file(paired_file)
     output:
-        file("tmp*{0,1}.txt")
+        tuple val(key), file("tmp*0.txt"), file("tmp*1.txt")
 
     script:
         base0 = paired_file[0].baseName
@@ -91,12 +92,12 @@ workflow {
             pointClouds.buffer(size: 2).map{it -> [it[0][0], it[0][1], it[1][1]]}.set{pairedPointsclouds}
         } else {
             append_columns_headers(paired_txt)
-            append_columns_headers.out.set{pairedPointsclouds}
-            pairedPointsclouds.flatten().set{pointClouds}
-        }
 
+            append_columns_headers.out.set{pairedPointsclouds}
+            pairedPointsclouds.map{it -> [[it[0], it[1]], [it[0], it[2]]]}.flatten().buffer(size: 2).set{pointClouds}
+        }
         double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
-        single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+        single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, lambda_t, act, epoch)
         OT(pairedPointsclouds)
         double_f.out.concat(single_f.out, OT.out).collect().set{results}
 

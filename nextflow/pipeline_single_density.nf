@@ -12,6 +12,7 @@ process estimate_double_density_in_one {
         each NORM
         each LR
         each WD
+        each LAMBDA_T
         each ACT
         each EPOCH
 
@@ -22,7 +23,12 @@ process estimate_double_density_in_one {
 
     script:
         CHUNK_ID = FILE0.baseName.split("-")[0]
-        NAME = "${CHUNK_ID}-${DATANAME}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}_single"
+        if (LAMBDA_T == 0.0){
+            postfix = "single"
+        }else{
+            postfix = "singleRegulated"
+        }
+        NAME = "${CHUNK_ID}-${DATANAME}__SCALE=${SCALE}__FOUR=${FOUR}__NORM=${NORM}__LR=${LR}__WD=${WD}__ACT=${ACT}__MAPPINGSIZE=${MAPPINGSIZE}__REGUL=${LAMBDA_T}_${postfix}"
         """
         python $py_file \
             --csv0 $FILE0 \
@@ -34,8 +40,9 @@ process estimate_double_density_in_one {
             --normalize $NORM \
             --lr $LR \
             --wd $WD \
-            --activation $ACT\
-            --name $NAME\
+            --lambda_t ${LAMBDA_T} \
+            --activation $ACT \
+            --name $NAME \
             --workers 8
         """
 }
@@ -43,7 +50,7 @@ process estimate_double_density_in_one {
 
 pyselect = file("python/src/selectbest.py")
 process selection {
-    publishDir "result/single/best", mode: 'symlink'
+    publishDir "result/single/selection", mode: 'symlink'
     input:
         path(CSV)
 
@@ -63,31 +70,30 @@ process post_processing {
     label 'gpu'
     publishDir "result/single/${DATANAMES[0]}/", mode: 'symlink'
     input:
-        tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE0), path(FILE1), val(CHUNK_ID)
+        tuple val(NAMES), val(DATANAMES), path(NPZ), path(WEIGHTS), path(FILE0), path(FILE1), val(CHUNK_ID), val(METHOD)
 
     output:
-        tuple val(DATANAMES), path("*${DATANAMES}*_results.npz")
+        tuple val(DATANAMES), val(METHOD), path("*${DATANAMES}*_results.npz")
         path("*.png")
     script:
         """
-        python $process single ${WEIGHTS} ${FILE0} ${FILE1} ${NPZ}
+        python $process ${METHOD} ${WEIGHTS} ${FILE0} ${FILE1} ${NPZ}
         """
 }
 
 
 process aggregate {
-    publishDir "result/${TYPE}/", mode: 'symlink'
+    publishDir "result/${METHOD}/", mode: 'symlink'
     input:
-        tuple val(DATANAME), path(NPZ)
-        val(TYPE)
+        tuple val(DATANAME), val(METHOD), path(NPZ)
     output:
-        path("${DATANAME}_${TYPE}.csv")
-        path("${DATANAME}_${TYPE}_chunkinfo.csv")
+        path("${DATANAME}_${METHOD}.csv")
+        path("${DATANAME}_${METHOD}_chunkinfo.csv")
 
     script:
         py_file = file("python/src/aggregate.py")
         """
-        python $py_file $DATANAME $TYPE
+        python $py_file $DATANAME $METHOD
         """
 }
 
@@ -108,10 +114,11 @@ workflow single_f {
         norm
         lr
         wd
+        lambda_t
         act
         epoch
     main:
-        estimate_double_density_in_one(paired_data, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+        estimate_double_density_in_one(paired_data, scale, fourier, mapping_size, norm, lr, wd, lambda_t, act, epoch)
         //estimate_density.out[0]
         estimate_double_density_in_one.out[0].collectFile(name:"together.csv", keepHeader: true, skip:1).set{training_scores}
         selection(training_scores)
@@ -119,7 +126,7 @@ workflow single_f {
             .set{selected}
         estimate_double_density_in_one.out[1].join(selected, by: 0).set{fused}
         post_processing(fused)
-        aggregate(post_processing.out[0].groupTuple(by: 0), "single")
+        aggregate(post_processing.out[0].groupTuple(by: [0, 1]))
     emit:
         aggregate.out[0]
 }

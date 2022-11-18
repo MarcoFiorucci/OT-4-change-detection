@@ -12,7 +12,7 @@ process optimal_transport {
         tuple val(DATANAME), file(FILE0), file(FILE1)
 
     output:
-        tuple val(DATANAME), path("$NAME" + ".npz")
+        tuple val(DATANAME), val("OT"), path("$NAME" + ".npz")
 
     script:
         NAME = "${FILE0}__OT" 
@@ -29,7 +29,7 @@ workflow OT {
         paired_data
     main:
         optimal_transport(paired_data)
-        aggregate(optimal_transport.out[0].groupTuple(by: 0), "OT")
+        aggregate(optimal_transport.out[0].groupTuple(by: [0, 1]))
     emit:
         aggregate.out[0]
 
