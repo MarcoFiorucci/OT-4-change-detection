@@ -96,7 +96,7 @@ workflow double_f {
         post_processing(fused)
         aggregate(post_processing.out[0].groupTuple(by: 0), "double")
     emit:
-        aggregate.output
+        aggregate.out[0]
 }
 
     

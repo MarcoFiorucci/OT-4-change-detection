@@ -31,7 +31,7 @@ workflow OT {
         optimal_transport(paired_data)
         aggregate(optimal_transport.out[0].groupTuple(by: 0), "OT")
     emit:
-        aggregate.output
+        aggregate.out[0]
 
 
 }

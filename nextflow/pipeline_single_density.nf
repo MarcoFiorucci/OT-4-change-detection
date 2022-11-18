@@ -82,6 +82,7 @@ process aggregate {
         val(TYPE)
     output:
         path("${DATANAME}_${TYPE}.csv")
+        path("${DATANAME}_${TYPE}_chunkinfo.csv")
 
     script:
         py_file = file("python/src/aggregate.py")
@@ -120,7 +121,7 @@ workflow single_f {
         post_processing(fused)
         aggregate(post_processing.out[0].groupTuple(by: 0), "single")
     emit:
-        aggregate.output
+        aggregate.out[0]
 }
 
 workflow {

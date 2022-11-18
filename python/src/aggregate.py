@@ -16,22 +16,44 @@ def open_npz_compute(f, OT=False):
     pred = np.zeros_like(z).astype(int)
     pred[z > th] = 1
     pred[z < -th] = 1
-    return z, gt, pred
+    iou = file["IoU_bin"]
+    return z, gt, pred, iou
 
 files = glob("*.npz")
 
 dataname = sys.argv[1]
 method = sys.argv[2]
 is_OT = method == "OT"
-diff_z = []
-prediction = []
-gt = []
+
+diff_z, prediction, gt = [], [], []
+iou_chunks, chunk_id, size = [], [], []
+max_changes, min_changes, labels = [], [], []
 
 for f in files:
-    z_f, gt_f, yhat = open_npz_compute(f, is_OT)
+    z_f, gt_f, yhat, iou = open_npz_compute(f, is_OT)
     diff_z.append(z_f)
     prediction.append(yhat)
     gt.append(gt_f)
+    iou_chunks.append(iou)
+    chunk_id.append(f.split("-")[0])
+    max_changes.append(z_f.max())
+    min_changes.append(z_f.min())
+    size.append(z_f.shape[0])
+    labels.append((gt_f != 0).sum())
+
+
+tmp_table = pd.DataFrame(
+    {"chunk_id": chunk_id,
+    "iou": iou_chunks,
+    "max_changes": max_changes,
+    "min_changes": min_changes,
+    "nlabels": labels,
+    "size": size
+    }
+)
+
+tmp_table.to_csv("{}_{}_chunkinfo.csv".format(dataname, method), index=False)
+
 
 diff_z = np.concatenate(diff_z, axis=0)
 prediction = np.concatenate(prediction, axis=0)
