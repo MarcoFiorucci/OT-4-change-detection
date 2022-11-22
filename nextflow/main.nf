@@ -101,6 +101,6 @@ workflow {
         // single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, lambda_t, act, epoch)
         OT(pairedPointsclouds)
         // double_f.out.concat(single_f.out, OT.out).collect().set{results}
-        OT.out.set{results}
+        OT.out.collect().set{results}
         final_table(results)
 }
