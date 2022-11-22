@@ -18,7 +18,8 @@ ext = params.extension
 MAX_POINT = 30000
 
 // Data
-paired_ply = Channel.fromFilePairs("data/LyonS/*{0,1}.ply")
+paired_ply = Channel.fromFilePairs("data/nextbunch/*{0,1}.ply")
+// paired_ply = Channel.fromFilePairs("data/LyonS/*{0,1}.ply")
 paired_txt = Channel.fromFilePairs("data/clippeddata/clippedMarco{0,1}.txt")
 
 process from_ply_to_txt {
@@ -96,10 +97,10 @@ workflow {
             append_columns_headers.out.set{pairedPointsclouds}
             pairedPointsclouds.map{it -> [[it[0], it[1]], [it[0], it[2]]]}.flatten().buffer(size: 2).set{pointClouds}
         }
-        double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
-        single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, lambda_t, act, epoch)
+        // double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+        // single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, lambda_t, act, epoch)
         OT(pairedPointsclouds)
-        double_f.out.concat(single_f.out, OT.out).collect().set{results}
-
+        // double_f.out.concat(single_f.out, OT.out).collect().set{results}
+        OT.out.set{results}
         final_table(results)
 }
