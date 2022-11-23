@@ -212,6 +212,8 @@ def predict_loop(dataloader, model):
         for X in dataloader:
             X = X.cuda(non_blocking=True)
             pred = model(X)
+            if X.shape[0] == 1:
+                pred = torch.Tensor([pred]).cuda()
             preds.append(pred)
     preds = torch.cat(preds)
     return preds
