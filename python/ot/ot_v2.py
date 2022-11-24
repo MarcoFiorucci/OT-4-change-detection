@@ -70,7 +70,7 @@ print('| Compute the transportation plan with JAX OTT |')
 print('------------------------------------------------')
 
 start = time.time()
-ot = transport.solve(X, Y, a=a, b=b, epsilon=opt.eps)
+ot = transport.solve(X, Y, a=a, b=b, epsilon=opt.epsilon)
 P = ot.matrix
 end = time.time()
 
