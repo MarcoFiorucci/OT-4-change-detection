@@ -28,6 +28,11 @@ def parser_f():
         default=None,
         type=str,
     )
+    parser.add_argument(
+        "--epsilon",
+        default=None,
+        type=float,
+    )
     args = parser.parse_args()
     return args
 
@@ -65,7 +70,7 @@ print('| Compute the transportation plan with JAX OTT |')
 print('------------------------------------------------')
 
 start = time.time()
-ot = transport.solve(X, Y, a=a, b=b, epsilon=1e-2)
+ot = transport.solve(X, Y, a=a, b=b, epsilon=opt.eps)
 P = ot.matrix
 end = time.time()
 

@@ -11,11 +11,12 @@ lr = [0.001, 0.01, 0.1]
 mapping_size = [512]
 act = ["relu"]
 epoch = [100]
+epsilon = 1e-2 // 1e-1
 wd = [0.0001]
 lambda_t = [0.0, 0.01, 1.0, 10.0]
 params.extension = "ply"
 ext = params.extension
-MAX_POINT = 30000
+MAX_POINT = 20000
 
 // Data
 paired_ply = Channel.fromFilePairs("data/nextbunch/*{0,1}.ply")
@@ -97,10 +98,10 @@ workflow {
             append_columns_headers.out.set{pairedPointsclouds}
             pairedPointsclouds.map{it -> [[it[0], it[1]], [it[0], it[2]]]}.flatten().buffer(size: 2).set{pointClouds}
         }
-        double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
-        single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, lambda_t, act, epoch)
-        OT(pairedPointsclouds)
-        double_f.out.concat(single_f.out, OT.out).collect().set{results}
-        // OT.out.collect().set{results}
+        // double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
+        // single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, lambda_t, act, epoch)
+        OT(pairedPointsclouds, epsilon)
+        // double_f.out.concat(single_f.out, OT.out).collect().set{results}
+        OT.out.collect().set{results}
         final_table(results)
 }

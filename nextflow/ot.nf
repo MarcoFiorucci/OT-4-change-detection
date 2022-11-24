@@ -10,6 +10,7 @@ process optimal_transport {
     label 'OT'
     input:
         tuple val(DATANAME), file(FILE0), file(FILE1)
+        val(EPS)
 
     output:
         tuple val(DATANAME), val("OT"), path("$NAME" + ".npz")
@@ -20,7 +21,8 @@ process optimal_transport {
         python $py_file \
             --csv0 $FILE0 \
             --csv1 $FILE1 \
-            --output $NAME
+            --output $NAME \
+            --epsilon $EPS
         """
 }
 
