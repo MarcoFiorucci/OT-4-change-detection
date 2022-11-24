@@ -16,7 +16,7 @@ wd = [0.0001]
 lambda_t = [0.0, 0.01, 1.0, 10.0]
 params.extension = "ply"
 ext = params.extension
-MAX_POINT = 20000
+MAX_POINT = 5000
 
 // Data
 paired_ply = Channel.fromFilePairs("data/nextbunch/*{0,1}.ply")
