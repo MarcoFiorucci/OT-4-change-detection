@@ -29,8 +29,9 @@ process optimal_transport {
 workflow OT {
     take:
         paired_data
+        epsilon
     main:
-        optimal_transport(paired_data)
+        optimal_transport(paired_data, epsilon)
         aggregate(optimal_transport.out[0].groupTuple(by: [0, 1]))
     emit:
         aggregate.out[0]
