@@ -70,7 +70,17 @@ print('| Compute the transportation plan with JAX OTT |')
 print('------------------------------------------------')
 
 start = time.time()
-ot = transport.solve(X, Y, a=a, b=b, epsilon=opt.epsilon)
+done = False
+eps = opt.epsilon
+times = 0
+while not done and times < 10:
+    try:
+        ot = transport.solve(X, Y, a=a, b=b, epsilon=eps)
+        done = True
+    except:
+        eps *= 10
+        times += 1
+
 P = ot.matrix
 end = time.time()
 
