@@ -170,6 +170,7 @@ fig.write_image(name_png)
 name_npz = f"{double}_{dataname}_results.npz"
 
 np.savez(name_npz, indices=grid_indices, 
+    x1=table1.X.values, y1=table1.Y.values,
     z0_on1=z0_on1,  z1_on1=z1_on1, 
     z0_ongrid=z0_ongrid, z1_ongrid=z1_ongrid, 
     labels_on1=y_on1, labels_ongrid=result.label,

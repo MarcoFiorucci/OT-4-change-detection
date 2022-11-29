@@ -85,7 +85,7 @@ P = ot.matrix
 end = time.time()
 
 print('Computation time for transportation plan: ', end - start)
-jnp.save('{}_P'.format(dataname), P)
+# jnp.save('{}_P'.format(dataname), P)
 
 print('----------------------------------')
 print('| Displacement Interpolation     |')
