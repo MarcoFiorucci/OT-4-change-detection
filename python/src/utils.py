@@ -17,7 +17,7 @@ def compute_iou(diffz, y, mc=True):
         y_pred[diffz < -thresh] = 2
         if mc:
             score = jaccard_score(y, y_pred, average=None)
-            score = np.mean(score[1:])
+            score = np.mean(score)#[1:])
             if score > best_score:
                 best_score = score
                 best_thresh = thresh
