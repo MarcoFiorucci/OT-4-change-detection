@@ -115,9 +115,8 @@ labels_2_n = (gt == 2).sum()
 # idxs = np.where(gt == 2)
 # gt[idxs] = 1
 
-bin_score, mc_score = compute_iou(np.array(diff_Y), gt, mc=True)
-iou_bin, thresh_bin, pred_bin = bin_score
-iou_mc, thresh_mc, pred_mc = mc_score
+iou_bin, thresh_bin, pred_bin, iou_mc, thresh_mc, pred_mc = mc_score = compute_iou(np.array(diff_Y), gt, mc=True)
+
 
 print('-------------------------------------------------------------')
 print('shape of change_intensity', diff_Y.shape)
