@@ -19,7 +19,8 @@ def open_npz_compute(f, OT=False):
     pred[z > th] = 1
     pred[z < -th] = 1
     iou = file["IoU_bin"]
-    return z, gt, pred, iou
+    iou_mc = file["IoU_mc"]
+    return z, gt, pred, iou, iou_mc
 
 files = glob("*.npz")
 
@@ -28,16 +29,17 @@ method = sys.argv[2]
 is_OT = method == "OT"
 
 diff_z, prediction, gt = [], [], []
-iou_chunks, chunk_id, size = [], [], []
+iou_chunks, iou_mc_chunks, chunk_id, size = [], [], [], []
 max_changes, min_changes, labels = [], [], []
 acc, pearson = [], []
 
 for f in files:
-    z_f, gt_f, yhat, iou = open_npz_compute(f, is_OT)
+    z_f, gt_f, yhat, iou, iou_mc = open_npz_compute(f, is_OT)
     diff_z.append(z_f)
     prediction.append(yhat)
     gt.append(gt_f)
     iou_chunks.append(iou)
+    iou_mc_chunks.append(iou_mc)
     chunk_id.append(f.split("-")[0])
     max_changes.append(z_f.max())
     min_changes.append(z_f.min())
@@ -50,6 +52,7 @@ for f in files:
 tmp_table = pd.DataFrame(
     {"chunk_id": chunk_id,
     "iou": iou_chunks,
+    "iou_mc": iou_mc_chunks
     "max_changes": max_changes,
     "min_changes": min_changes,
     "nlabels": labels,
@@ -68,17 +71,11 @@ gt = np.concatenate(gt, axis=0)
 
 table = pd.DataFrame()
 
-output = compute_iou(diff_z, gt, mc=not is_OT)
-if is_OT:
-    iou, _, _ = output
-else:
-    bin_, mc = output
-    iou, iou_mc = bin_[0], mc[0]
-    table.loc[dataname, "iou_mc"] = iou_mc
+output = compute_iou(diff_z, gt, mc=True)
 
+bin_, mc = output
+iou, iou_mc = bin_[0], mc[0]
+table.loc[dataname, "iou_mc"] = iou_mc
 table.loc[dataname, "iou"] = iou
 table.loc[dataname, "method"] = method
 table.to_csv("{}_{}.csv".format(dataname, method))
-
-
-

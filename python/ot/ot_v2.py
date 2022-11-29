@@ -97,32 +97,34 @@ Yt_hat = np.matmul(np.linalg.inv(np.diag(np.matmul(np.transpose(P),one_n1))) ,
                      np.matmul(np.transpose(P), X))
 
 print('----------------------------------')
-print('| Quantity of changes              |')
+print('| Quantity of changes            |')
 print('----------------------------------')
 
 #changes in the latitue-longitude plane |Y-Yt_hat|^2
-diff_Y = jnp.sum(jnp.square(Y-Yt_hat), axis=1)
+diff_Y = jnp.sum(jnp.square(Y-Yt_hat), axis=1) * np.sign(Y[:,2]-Yt_hat[:,2])
 # changes_intesity_y/= jnp.max(changes_intesity_y)
 
 print('----------------------------------')
-print('| Evaluation Metrics              |')
+print('| Evaluation Metrics             |')
 print('----------------------------------')
 
 #iou for a given change type (class)
 #change gt: 0 no change, 1 changes (both positive and negative changes)
 labels_1_n = (gt == 1).sum()
 labels_2_n = (gt == 2).sum()
-idxs = np.where(gt == 2)
-gt[idxs] = 1
+# idxs = np.where(gt == 2)
+# gt[idxs] = 1
 
-iou_bin, thresh_bin, pred_bin = compute_iou(np.array(diff_Y), gt, mc=False)
-
+bin_score, mc_score = compute_iou(np.array(diff_Y), gt, mc=True)
+iou_bin, thresh_bin, pred_bin = bin_score
+iou_mc, thresh_mc, pred_mc = mc_score
 
 print('-------------------------------------------------------------')
 print('shape of change_intensity', diff_Y.shape)
 print('max iou of changes on y:' +  str(iou_bin))
 
 np.savez(dataname + ".npz", IoU_bin=iou_bin,
+    Y=Y, Yhat=Yt_hat, IoU_mc=iou_mc, thresh_mc=thresh_mc, 
     thresh_bin=thresh_bin, changes=diff_Y,
     z0_n=a.shape[0], z1_n=a.shape[0], 
     labels_1_n=labels_1_n,
