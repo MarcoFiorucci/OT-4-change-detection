@@ -60,7 +60,7 @@ for f in files:
 tmp_table = pd.DataFrame(
     {"chunk_id": chunk_id,
     "iou": iou_chunks,
-    "iou_mc": iou_mc_chunks
+    "iou_mc": iou_mc_chunks,
     "max_changes": max_changes,
     "min_changes": min_changes,
     "nlabels": labels,
