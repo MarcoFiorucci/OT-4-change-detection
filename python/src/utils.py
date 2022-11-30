@@ -10,11 +10,12 @@ def compute_iou(diffz, y, mc=True, threshold=None):
         if mc:
             score = jaccard_score(y, y_pred, average=None)
             score = np.mean(score)#[1:])
+            best_score = score
+            best_thresh = threshold
+            final_pred = y_pred
         final_pred_bin = y_pred > 0
         score_bin = jaccard_score(y > 0, final_pred_bin)
         out_bin = score_bin, threshold, final_pred_bin
-        if mc:
-            out_mc = score,  threshold, y_pred
     else:
         best_score_bin = 0
         best_thresh_bin = 0
