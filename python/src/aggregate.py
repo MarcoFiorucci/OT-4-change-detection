@@ -86,7 +86,7 @@ table = pd.DataFrame()
 
 iou_bin, _, _, iou_mc, _, _ = compute_iou(diff_z, gt, mc=True)
 iou_eroded, _, _, iou_mc_eroded, _, _ = compute_iou(eroded, gt, mc=True)
-iou_opened, _, _, iou_mc_opened = compute_iou(opening, gt, mc=True)
+iou_opened, _, _, iou_mc_opened, _, _ = compute_iou(opening, gt, mc=True)
 
 iou_bin_fix_th, _, _, iou_mc_fix_th, _, _ = compute_iou(diff_z, gt, mc=True, threshold=5)
 iou_eroded_fix_th, _, _, iou_mc_eroded_fix_th, _, _ = compute_iou(eroded, gt, mc=True, threshold=5)
