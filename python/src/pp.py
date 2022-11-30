@@ -1,6 +1,5 @@
 import numpy as np
 import argparse
-import matplotlib.pylab as plt
 from scipy.spatial import Delaunay
 
 from sklearn.neighbors import NearestNeighbors
