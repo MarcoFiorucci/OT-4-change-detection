@@ -6,26 +6,23 @@ from utils import compute_iou
 from sklearn.metrics import accuracy_score
 from scipy.stats import pearsonr
 import pandas as pd
-from pp import post_processing
+
 def open_npz_compute(f, OT=False):
     file = np.load(f)
     gt = file["labels_on1"]
     th = file["thresh_bin"]
     if OT:
         z = file["changes"]
-        pc1 = file["Y"]
-        x = pc1[:, 0]
-        y = pc1[:, 1]
+        opened_z = file["opened_changes"]
     else:
         z = file["z1_on1"] - file["z0_on1"]
-        x = file["x1"]
-        y = file["y1"]
+        opened_z = z.copy()
     pred = np.zeros_like(z).astype(int)
     pred[z > th] = 1
     pred[z < -th] = 1
     iou = file["IoU_bin"]
     iou_mc = file["IoU_mc"]
-    return z, gt, pred, iou, iou_mc, x, y
+    return z, gt, pred, iou, iou_mc, opened_z
 
 files = glob("*.npz")
 
@@ -34,13 +31,13 @@ method = sys.argv[2]
 is_OT = method == "OT"
 
 diff_z, prediction, gt = [], [], []
-X, Y = [], []
+diff_z_opened = []
 iou_chunks, iou_mc_chunks, chunk_id, size = [], [], [], []
 max_changes, min_changes, labels = [], [], []
 acc, pearson = [], []
 
 for f in files:
-    z_f, gt_f, yhat, iou, iou_mc, subx, suby = open_npz_compute(f, is_OT)
+    z_f, gt_f, yhat, iou, iou_mc, z_f_opened = open_npz_compute(f, is_OT)
     diff_z.append(z_f)
     prediction.append(yhat)
     gt.append(gt_f)
@@ -53,8 +50,7 @@ for f in files:
     labels.append((gt_f != 0).sum())
     acc.append(accuracy_score(gt_f, yhat))
     pearson.append(pearsonr(gt_f, yhat)[0])
-    X.append(subx)
-    Y.append(suby)
+    diff_z_opened.append(z_f_opened)
 
 
 tmp_table = pd.DataFrame(
@@ -75,31 +71,24 @@ tmp_table.to_csv("{}_{}_chunkinfo.csv".format(dataname, method), index=False)
 
 diff_z = np.concatenate(diff_z, axis=0)
 prediction = np.concatenate(prediction, axis=0)
-X = np.concatenate(X, axis=0)
-Y = np.concatenate(Y, axis=0)
+diff_z_opened = np.concatenate(diff_z_opened, axis=0)
 gt = np.concatenate(gt, axis=0)
 
-opening, eroded = post_processing(X, Y, diff_z, method="voronoi", return_both=True) 
 
 
 table = pd.DataFrame()
 
 iou_bin, _, _, iou_mc, _, _ = compute_iou(diff_z, gt, mc=True)
-iou_eroded, _, _, iou_mc_eroded, _, _ = compute_iou(eroded, gt, mc=True)
-iou_opened, _, _, iou_mc_opened, _, _ = compute_iou(opening, gt, mc=True)
-
 iou_bin_fix_th, _, _, iou_mc_fix_th, _, _ = compute_iou(diff_z, gt, mc=True, threshold=5)
-iou_eroded_fix_th, _, _, iou_mc_eroded_fix_th, _, _ = compute_iou(eroded, gt, mc=True, threshold=5)
-iou_opened_fix_th, _, _, iou_mc_opened_fix_th, _, _ = compute_iou(opening, gt, mc=True, threshold=5)
+
+iou_opened, _, _, iou_mc_opened, _, _ = compute_iou(diff_z_opened, gt, mc=True)
+iou_opened_fix_th, _, _, iou_mc_opened_fix_th, _, _ = compute_iou(diff_z_opened, gt, mc=True, threshold=5)
 
 table.loc[dataname, "iou_mc"] = iou_mc
 table.loc[dataname, "iou"] = iou_bin
 table.loc[dataname, "iou_mc_threshold"] = iou_mc_fix_th
 table.loc[dataname, "iou_threshold"] = iou_bin_fix_th
-table.loc[dataname, "iou_mc_eroded_threshold"] = iou_mc_eroded_fix_th
-table.loc[dataname, "iou_eroded_threshold"] = iou_eroded_fix_th
-table.loc[dataname, "iou_mc_eroded"] = iou_mc_eroded
-table.loc[dataname, "iou_eroded"] = iou_eroded
+
 table.loc[dataname, "iou_mc_opened_threshold"] = iou_mc_opened_fix_th
 table.loc[dataname, "iou_opened_threshold"] = iou_opened_fix_th
 table.loc[dataname, "iou_mc_opened"] = iou_mc_opened

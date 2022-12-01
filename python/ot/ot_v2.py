@@ -8,6 +8,7 @@ from ott.tools import transport
 import ot
 import argparse
 from utils import compute_iou
+from pp import post_processing
 
 def parser_f():
 
@@ -116,15 +117,15 @@ labels_2_n = (gt == 2).sum()
 # gt[idxs] = 1
 
 iou_bin, thresh_bin, pred_bin, iou_mc, thresh_mc, pred_mc = mc_score = compute_iou(np.array(diff_Y), gt, mc=True)
-
+opening = post_processing(Y[:,0], Y[:,1], diff_Y, method="voronoi", return_both=False) 
 
 print('-------------------------------------------------------------')
 print('shape of change_intensity', diff_Y.shape)
 print('max iou of changes on y:' +  str(iou_bin))
 
 np.savez(dataname + ".npz", IoU_bin=iou_bin,
-    Y=Y, Yhat=Yt_hat, IoU_mc=iou_mc, thresh_mc=thresh_mc, 
-    thresh_bin=thresh_bin, changes=diff_Y,
+    IoU_mc=iou_mc, thresh_mc=thresh_mc, 
+    thresh_bin=thresh_bin, changes=diff_Y, opened_changes=opening,
     z0_n=a.shape[0], z1_n=a.shape[0], 
     labels_1_n=labels_1_n,
     labels_2_n=labels_2_n, labels_on1=gt)
