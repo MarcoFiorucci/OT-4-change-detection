@@ -6,6 +6,7 @@ from utils import compute_iou
 from sklearn.metrics import accuracy_score
 from scipy.stats import pearsonr
 import pandas as pd
+from tqdm import tqdm
 
 def open_npz_compute(f, OT=False):
     file = np.load(f)
@@ -36,7 +37,8 @@ iou_chunks, iou_mc_chunks, chunk_id, size = [], [], [], []
 max_changes, min_changes, labels = [], [], []
 acc, pearson = [], []
 
-for f in files:
+print("Reading files")
+for f in tqdm(files):
     z_f, gt_f, yhat, iou, iou_mc, z_f_opened = open_npz_compute(f, is_OT)
     diff_z.append(z_f)
     prediction.append(yhat)
@@ -77,12 +79,12 @@ gt = np.concatenate(gt, axis=0)
 
 
 table = pd.DataFrame()
+print("Computing iou")
+iou_bin, _, _, iou_mc, _, _ = compute_iou(diff_z, gt)
+iou_bin_fix_th, _, _, iou_mc_fix_th, _, _ = compute_iou(diff_z, gt, threshold=5)
 
-iou_bin, _, _, iou_mc, _, _ = compute_iou(diff_z, gt, mc=True)
-iou_bin_fix_th, _, _, iou_mc_fix_th, _, _ = compute_iou(diff_z, gt, mc=True, threshold=5)
-
-iou_opened, _, _, iou_mc_opened, _, _ = compute_iou(diff_z_opened, gt, mc=True)
-iou_opened_fix_th, _, _, iou_mc_opened_fix_th, _, _ = compute_iou(diff_z_opened, gt, mc=True, threshold=5)
+iou_opened, _, _, iou_mc_opened, _, _ = compute_iou(diff_z_opened, gt)
+iou_opened_fix_th, _, _, iou_mc_opened_fix_th, _, _ = compute_iou(diff_z_opened, gt, threshold=5)
 
 table.loc[dataname, "iou_mc"] = iou_mc
 table.loc[dataname, "iou"] = iou_bin
