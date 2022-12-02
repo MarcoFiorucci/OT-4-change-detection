@@ -26,7 +26,7 @@ process optimal_transport {
             --csv1 $FILE1 \
             --output $NAME \
             --epsilon $EPS \
-            --epsilon $UNB_EPS 
+            --epsilon_unbalanced $UNB_EPS 
         """
 }
 

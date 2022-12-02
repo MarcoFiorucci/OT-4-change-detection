@@ -65,9 +65,9 @@ def init_ot_variables(csv0, csv1):
     #a is now a uniform probability distribution
     a_shape = pc0.shape[0]
     b_shape = pc1.shape[0]
-    a = np.full((a_shape), 1/a_shape) 
+    a = jnp.full((a_shape), 1/a_shape) 
     #b is now a uniform probability distribution
-    b = np.full((b_shape), 1/b_shape)
+    b = jnp.full((b_shape), 1/b_shape)
     return X, Y, GT, a, b, a_shape, b_shape
 
 #Flag variables
@@ -80,9 +80,9 @@ print('------------------------------------------------')
 print('| Compute the transportation plan with JAX OTT |')
 print('------------------------------------------------')
 eps = opt.epsilon
+start = time.time()
 
 if opt.method == "vanilla":
-    start = time.time()
     done = False
     times = 0
     while not done and times < 10:
@@ -94,7 +94,7 @@ if opt.method == "vanilla":
             times += 1
 
     P = ot.matrix
-    end = time.time()
+    
 elif opt.method == "unbalanced":
     reg_kl = opt.epsilon_unbalanced
     M = ot.dist(X, Y)
@@ -102,7 +102,7 @@ elif opt.method == "unbalanced":
     P = round(ot.sinkhorn_unbalanced(a, b, M, eps, reg_kl), 9)
 else:
     print("unknown option method {}".format(opt.method))
-
+end = time.time()
 print('Computation time for transportation plan: ', end - start)
 # jnp.save('{}_P'.format(dataname), P)
 
