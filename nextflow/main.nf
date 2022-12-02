@@ -3,7 +3,7 @@ include { double_f } from './pipeline_double_density.nf'
 include { single_f } from './pipeline_single_density.nf'
 include { OT } from './ot.nf'
 
-// Parameters
+// NeRF Parameters
 scale = [1.0, 5.0]
 fourier = ["--fourier"]
 norm = ["one_minus"]
@@ -11,9 +11,15 @@ lr = [0.001, 0.01, 0.1]
 mapping_size = [512]
 act = ["relu"]
 epoch = [100]
-epsilon = 1e-5
 wd = [0.0001]
 lambda_t = [0.0, 0.01, 1.0, 10.0]
+// OT Parameters
+
+epsilon = 1e-3
+unb_epsilon = 5*1e-3
+method = "unbalanced" // "vanilla"
+
+// Chunk Parameters
 params.extension = "ply"
 ext = params.extension
 MAX_POINT = 30000

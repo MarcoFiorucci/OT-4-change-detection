@@ -30,7 +30,17 @@ def parser_f():
         type=str,
     )
     parser.add_argument(
+        "--method",
+        default="vanilla",
+        type=str,
+    )
+    parser.add_argument(
         "--epsilon",
+        default=None,
+        type=float,
+    )
+    parser.add_argument(
+        "--epsilon_unbalanced",
         default=None,
         type=float,
     )
@@ -69,21 +79,29 @@ X, Y, gt, a, b, labels_1_n, labels_2_n = init_ot_variables(opt.csv0, opt.csv1)
 print('------------------------------------------------')
 print('| Compute the transportation plan with JAX OTT |')
 print('------------------------------------------------')
-
-start = time.time()
-done = False
 eps = opt.epsilon
-times = 0
-while not done and times < 10:
-    try:
-        ot = transport.solve(X, Y, a=a, b=b, epsilon=eps)
-        done = True
-    except:
-        eps *= 10
-        times += 1
 
-P = ot.matrix
-end = time.time()
+if opt.method == "vanilla":
+    start = time.time()
+    done = False
+    times = 0
+    while not done and times < 10:
+        try:
+            ot = transport.solve(X, Y, a=a, b=b, epsilon=eps)
+            done = True
+        except:
+            eps *= 10
+            times += 1
+
+    P = ot.matrix
+    end = time.time()
+elif opt.method == "unbalanced":
+    reg_kl = opt.epsilon_unbalanced
+    M = ot.dist(X, Y)
+    M /= M.max()
+    P = round(ot.sinkhorn_unbalanced(a, b, M, eps, reg_kl), 9)
+else:
+    print("unknown option method {}".format(opt.method))
 
 print('Computation time for transportation plan: ', end - start)
 # jnp.save('{}_P'.format(dataname), P)
@@ -117,7 +135,7 @@ labels_2_n = (gt == 2).sum()
 # gt[idxs] = 1
 
 iou_bin, thresh_bin, pred_bin, iou_mc, thresh_mc, pred_mc = mc_score = compute_iou(np.array(diff_Y), gt)
-opening = post_processing(Y[:,0], Y[:,1], diff_Y, method="voronoi", return_both=False) 
+# opening = post_processing(Y[:,0], Y[:,1], diff_Y, method="voronoi", return_both=False) 
 
 print('-------------------------------------------------------------')
 print('shape of change_intensity', diff_Y.shape)
@@ -125,7 +143,8 @@ print('max iou of changes on y:' +  str(iou_bin))
 
 np.savez(dataname + ".npz", IoU_bin=iou_bin,
     IoU_mc=iou_mc, thresh_mc=thresh_mc, 
-    thresh_bin=thresh_bin, changes=diff_Y, opened_changes=opening,
+    thresh_bin=thresh_bin, changes=diff_Y,# opened_changes=opening,
     z0_n=a.shape[0], z1_n=a.shape[0], 
     labels_1_n=labels_1_n,
     labels_2_n=labels_2_n, labels_on1=gt)
+

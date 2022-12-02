@@ -10,7 +10,9 @@ process optimal_transport {
     label 'OT'
     input:
         tuple val(DATANAME), file(FILE0), file(FILE1)
+        val(METHOD)
         val(EPS)
+        val(UNB_EPS) 
 
     output:
         tuple val(DATANAME), val("OT"), path("$NAME" + ".npz")
@@ -19,19 +21,23 @@ process optimal_transport {
         NAME = "${FILE0}__OT" 
         """
         python $py_file \
+            --method $METHOD \
             --csv0 $FILE0 \
             --csv1 $FILE1 \
             --output $NAME \
-            --epsilon $EPS
+            --epsilon $EPS \
+            --epsilon $UNB_EPS 
         """
 }
 
 workflow OT {
     take:
         paired_data
+        method
         epsilon
+        unb_epsilon
     main:
-        optimal_transport(paired_data, epsilon)
+        optimal_transport(paired_data, method, epsilon, unb_epsilon)
         aggregate(optimal_transport.out[0].groupTuple(by: [0, 1]))
     emit:
         aggregate.out[0]
