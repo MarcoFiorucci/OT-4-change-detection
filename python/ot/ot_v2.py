@@ -140,6 +140,7 @@ iou_bin, thresh_bin, pred_bin, iou_mc, thresh_mc, pred_mc = mc_score = compute_i
 print('-------------------------------------------------------------')
 print('shape of change_intensity', diff_Y.shape)
 print('max iou of changes on y:' +  str(iou_bin))
+print('max iou mc of changes on y:' +  str(iou_mc))
 
 np.savez(dataname + ".npz", IoU_bin=iou_bin,
     IoU_mc=iou_mc, thresh_mc=thresh_mc, 
