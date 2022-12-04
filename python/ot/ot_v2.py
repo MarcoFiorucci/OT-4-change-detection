@@ -112,7 +112,7 @@ print('----------------------------------')
 one_n1 = np.ones(len(a))
 one_n2 = np.ones(len(b))
 
-Yt_hat = np.matmul(np.linalg.inv(np.diag(np.matmul(np.transpose(P),one_n1))) ,
+Yt_hat = np.matmul(np.linalg.pinv(np.diag(np.matmul(np.transpose(P),one_n1))) ,
                      np.matmul(np.transpose(P), X))
 
 print('----------------------------------')
