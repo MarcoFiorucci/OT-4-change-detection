@@ -15,8 +15,8 @@ wd = [0.0001]
 lambda_t = [0.0, 0.01, 1.0, 10.0]
 // OT Parameters
 
-epsilon = 1e-3
-unb_epsilon = 5*1e-3
+epsilon = [1e-5, 1e-4, 1e-3, 1e-2]
+unb_epsilon = [5*1e-4, 5*1e-3, 5*1e-2]
 method = "unbalanced" // "vanilla"
 
 // Chunk Parameters

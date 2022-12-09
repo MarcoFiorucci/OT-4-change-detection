@@ -29,7 +29,7 @@ files = glob("*.npz")
 
 dataname = sys.argv[1]
 method = sys.argv[2]
-is_OT = method == "OT"
+is_OT = "OT" == method[:2]
 
 diff_z, prediction, gt = [], [], []
 diff_z_opened = []
