@@ -112,8 +112,16 @@ print('----------------------------------')
 one_n1 = np.ones(len(a))
 one_n2 = np.ones(len(b))
 
-Yt_hat = np.matmul(np.linalg.pinv(np.diag(np.matmul(np.transpose(P),one_n1))) ,
-                     np.matmul(np.transpose(P), X))
+atmp = np.matmul(P.T, one_n1)
+atmp2 = np.diag(np.where(atmp == 0, 0, 1 / atmp))
+# atmp2 = np.linalg.pinv(atmp1)
+btmp = np.matmul(P.T, X)
+
+Yt_hat = np.matmul(atmp2, btmp)
+
+
+# Yt_hat = np.matmul(np.linalg.pinv(np.diag(np.matmul(np.transpose(P),one_n1))) ,
+#                      np.matmul(np.transpose(P), X))
 
 print('----------------------------------')
 print('| Quantity of changes            |')
