@@ -15,8 +15,12 @@ wd = [0.0001]
 lambda_t = [0.0, 0.01, 1.0, 10.0]
 // OT Parameters
 
-epsilon = [1e-5, 1e-4, 1e-3, 1e-2]
-unb_epsilon = [5*1e-4, 5*1e-3, 5*1e-2]
+// epsilon = [1e-5, 1e-4, 1e-3, 1e-2]
+// unb_epsilon = [5*1e-4, 5*1e-3, 5*1e-2]
+epsilon = Channel.from([1..20]).flatten()
+epsilon.map{it -> it * 5 / 100}.set{epsilon}
+unb_epsilon = epsilon
+
 method = "unbalanced" // "vanilla"
 
 // Chunk Parameters
