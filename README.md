@@ -20,7 +20,7 @@ Modify the variable `paired_txt` in the file `nextflow/main.nf` and run:
 The pipeline accepts `ply` files as input in the following format: `NAME_0.ply` and `NAME_1.ply`.
 Modify the variable `paired_ply` in the file `nextflow/main.nf` and run:
 
-``` make data_ply ``
+``` make data_ply ```
 
 ## Output files
 
