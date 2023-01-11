@@ -4,7 +4,6 @@ channels:
   - defaults
 dependencies:
   # project-specific packages
-  - pytorch
   # required
   - libblas=*=*_mkl
   - nextflow

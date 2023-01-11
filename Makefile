@@ -1,12 +1,6 @@
 
-full_data_home:
+data_ply:
 	nextflow run nextflow/main.nf -resume --extension ply
 
-full_data:
-	nextflow run nextflow/main.nf -resume --extension ply -profile raiden
-
-clipped:
-	nextflow run nextflow/main.nf -resume --extension txt -profile raiden
-
-clipped_home:
+data_txt:
 	nextflow run nextflow/main.nf -resume --extension txt

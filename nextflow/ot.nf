@@ -1,9 +1,7 @@
 
 datapairs = Channel.fromFilePairs("data/clippeddata/*{0,1}.txt")
 
-include { aggregate } from './pipeline_single_density.nf'
-
-py_file = file("python/ot/ot_v2.py")
+py_file = file("python/ot/ot_cd.py")
 
 process optimal_transport {
     publishDir "result/OT/"
@@ -29,6 +27,22 @@ process optimal_transport {
             --epsilon_unbalanced $UNB_EPS 
         """
 }
+
+process aggregate {
+    publishDir "result/individual/${METHOD}/", mode: 'symlink'
+    input:
+        tuple val(DATANAME), val(METHOD), path(NPZ)
+    output:
+        path("${DATANAME}_${METHOD}.csv")
+        path("${DATANAME}_${METHOD}_chunkinfo.csv")
+
+    script:
+        py_file = file("python/src/aggregate.py")
+        """
+        python $py_file $DATANAME $METHOD
+        """
+}
+
 
 workflow OT {
     take:

@@ -1,25 +1,11 @@
 
-include { double_f } from './pipeline_double_density.nf'
-include { single_f } from './pipeline_single_density.nf'
+
 include { OT } from './ot.nf'
 
-// NeRF Parameters
-scale = [1.0, 5.0]
-fourier = ["--fourier"]
-norm = ["one_minus"]
-lr = [0.001, 0.01, 0.1]
-mapping_size = [512]
-act = ["relu"]
-epoch = [100]
-wd = [0.0001]
-lambda_t = [0.0, 0.01, 1.0, 10.0]
 // OT Parameters
 
-// epsilon = [1e-5, 1e-4, 1e-3, 1e-2]
-// unb_epsilon = [5*1e-4, 5*1e-3, 5*1e-2]
-epsilon = Channel.from([1..20]).flatten()
-epsilon.map{it -> it * 5 / 100}.set{epsilon}
-unb_epsilon = epsilon
+epsilon = [1e-5, 1e-4, 1e-3, 1e-2]
+unb_epsilon = [5*1e-4, 5*1e-3, 5*1e-2]
 
 method = "unbalanced" // "vanilla"
 
@@ -53,7 +39,7 @@ process into_chunks {
         file(paired_file)
         val max_point
     output:
-        tuple val(DATANAME), path("*Chunks*{0,1}.txt")//.collate(2)//.buffer( size: 2 , skip:0 )
+        tuple val(DATANAME), path("*Chunks*{0,1}.txt")
     script:
         pyfile = file("python/src/split_grid.py")
         file0 = paired_file[0]
@@ -108,10 +94,9 @@ workflow {
             append_columns_headers.out.set{pairedPointsclouds}
             pairedPointsclouds.map{it -> [[it[0], it[1]], [it[0], it[2]]]}.flatten().buffer(size: 2).set{pointClouds}
         }
-        // double_f(pointClouds, scale, fourier, mapping_size, norm, lr, wd, act, epoch)
-        // single_f(pairedPointsclouds, scale, fourier, mapping_size, norm, lr, wd, lambda_t, act, epoch)
+
         OT(pairedPointsclouds, method, epsilon, unb_epsilon)
-        // double_f.out.concat(single_f.out, OT.out).collect().set{results}
         OT.out.collect().set{results}
+
         final_table(results)
 }
