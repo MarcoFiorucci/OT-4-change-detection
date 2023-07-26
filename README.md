@@ -1,7 +1,7 @@
 # OT-4-change-detection
 
 This repository contains all the necessary to reproduce the work "*Optimal Transport for Change Detection on LiDAR Point Clouds*" by Marco Fiorucci, Peter Naylor and Makoto Yamada. 
-<!-- You can find the paper [here](not working) (UNPUBLISHED). -->
+You can find the paper https://arxiv.org/abs/2302.07025
 
 # Usage
 
